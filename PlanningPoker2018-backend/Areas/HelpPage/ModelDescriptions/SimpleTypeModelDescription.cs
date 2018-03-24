@@ -1,0 +1,6 @@
+namespace PlanningPoker2018_backend.Areas.HelpPage.ModelDescriptions
+{
+    public class SimpleTypeModelDescription : ModelDescription
+    {
+    }
+}
