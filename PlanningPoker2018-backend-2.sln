@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2015
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanningPoker2018-backend-2", "PlanningPoker2018-backend-2\PlanningPoker2018-backend-2.csproj", "{3387BA74-37C4-4D8B-9E77-721114AA5E1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlanningPoker2018_backend_2", "PlanningPoker2018-backend-2\PlanningPoker2018_backend_2.csproj", "{3387BA74-37C4-4D8B-9E77-721114AA5E1B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanningPoker2018_backend.Tests", "PlanningPoker2018_backend.Tests\PlanningPoker2018_backend.Tests.csproj", "{2BD9947B-6B8A-49E6-B849-1FBC166A11A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{3387BA74-37C4-4D8B-9E77-721114AA5E1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3387BA74-37C4-4D8B-9E77-721114AA5E1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3387BA74-37C4-4D8B-9E77-721114AA5E1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BD9947B-6B8A-49E6-B849-1FBC166A11A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BD9947B-6B8A-49E6-B849-1FBC166A11A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BD9947B-6B8A-49E6-B849-1FBC166A11A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BD9947B-6B8A-49E6-B849-1FBC166A11A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
