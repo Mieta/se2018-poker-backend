@@ -1,7 +1,16 @@
 configuration: Release
 
+image: Visual Studio 2017
+environment:
+  EnableNuGetPackageRestore: true
+
+nuget:
+  account_feed: true
+  project_feed: true
 before_build:
-    - nuget restore
+- cmd: >-
+    nuget update -self
+    nuget restore
  
 build:
     verbosity: minimal
