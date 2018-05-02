@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Fleck;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningPoker2018_backend_2.Models;
+using PlanningPoker2018_backend_2.WebSockets;
 
 namespace PlanningPoker2018_backend_2
 {
@@ -60,6 +63,9 @@ namespace PlanningPoker2018_backend_2
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+
+            var wsHostServer = new HostServer();
         }
     }
 }
