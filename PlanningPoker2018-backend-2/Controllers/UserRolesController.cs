@@ -10,21 +10,21 @@ using PlanningPoker2018_backend_2.Models;
 namespace PlanningPoker2018_backend_2.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Users")]
-    public class UsersController : Controller
+    [Route("api/UserRoles")]
+    public class UserRolesController : Controller
     {
         private readonly DatabaseContext _context;
 
-        public UsersController(DatabaseContext context)
+        public UserRolesController(DatabaseContext context)
         {
             _context = context;
         }
 
-        // GET: api/Users
+        // GET: api/UserRoles
         [HttpGet]
-        public IEnumerable<User> GetUser()
+        public IEnumerable<UserRole> GetUserRole()
         {
-            return _context.User;
+            return _context.UserRole;
         }
     }
 }

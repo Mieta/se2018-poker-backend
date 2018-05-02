@@ -11,9 +11,10 @@ using System;
 namespace PlanningPoker2018_backend_2.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20180502110202_UsersCreate")]
+    partial class UsersCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,34 +42,9 @@ namespace PlanningPoker2018_backend_2.Migrations
                     b.Property<string>("name")
                         .IsRequired();
 
-                    b.Property<int>("roleid");
-
                     b.HasKey("id");
-
-                    b.HasIndex("roleid");
 
                     b.ToTable("User");
-                });
-
-            modelBuilder.Entity("PlanningPoker2018_backend_2.Models.UserRole", b =>
-                {
-                    b.Property<int>("id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("name")
-                        .IsRequired();
-
-                    b.HasKey("id");
-
-                    b.ToTable("UserRole");
-                });
-
-            modelBuilder.Entity("PlanningPoker2018_backend_2.Models.User", b =>
-                {
-                    b.HasOne("PlanningPoker2018_backend_2.Models.UserRole", "role")
-                        .WithMany()
-                        .HasForeignKey("roleid")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }
