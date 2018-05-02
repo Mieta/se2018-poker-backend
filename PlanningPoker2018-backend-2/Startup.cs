@@ -35,6 +35,7 @@ namespace PlanningPoker2018_backend_2
             var serviceProvider = services.BuildServiceProvider();
             var context = serviceProvider.GetService<DatabaseContext>();
             context.Database.Migrate();
+            DataSeeder.SeedUserRoles(context);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
