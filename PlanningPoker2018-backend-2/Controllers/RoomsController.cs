@@ -21,9 +21,9 @@ namespace PlanningPoker2018_backend_2.Controllers
         }
         
         [HttpGet]
-        public IQueryable GetRooms()
+        public IEnumerable<Room> GetRooms()
         {
-            return _context.Room;
+            return _context.Room.ToList();
         }
 
         // PUT: api/rooms
