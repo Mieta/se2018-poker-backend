@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -14,6 +15,7 @@ namespace PlanningPoker2018_backend_2.Models
         [Required]
         public string name { get; set; }
         [NotMapped]
+        [JsonIgnore]
         public string link { get; set; }
     }
 }

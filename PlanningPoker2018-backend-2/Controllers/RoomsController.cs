@@ -38,7 +38,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.Room.Add(room);
             await _context.SaveChangesAsync();
 
-            room.link = "http://localhost:4200/room/" + room.id.ToString();
+            room.link = "https://online-planning-poker.herokuapp.com/room/participant/" + room.id.ToString();
 
             return CreatedAtAction("GetRoom", new { id = room.id }, room);
         }
