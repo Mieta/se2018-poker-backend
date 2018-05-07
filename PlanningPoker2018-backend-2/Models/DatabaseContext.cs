@@ -17,5 +17,9 @@ namespace PlanningPoker2018_backend_2.Models
         }
 
         public DbSet<PlanningPoker2018_backend_2.Models.Room> Room { get; set; }
+
+        public DbSet<PlanningPoker2018_backend_2.Models.User> User { get; set; }
+
+        public DbSet<PlanningPoker2018_backend_2.Models.UserRole> UserRole { get; set; }
     }
 }
