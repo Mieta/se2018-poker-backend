@@ -56,7 +56,11 @@ namespace PlanningPoker2018_backend_2
             }
 
             app.UseStaticFiles();
-            
+            app.UseCors(options => options
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            );
 
             app.UseMvc(routes =>
             {
@@ -64,7 +68,7 @@ namespace PlanningPoker2018_backend_2
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-            app.UseCors(options => options.AllowAnyOrigin());
+            
 
 
 
