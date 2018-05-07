@@ -39,6 +39,7 @@ namespace PlanningPoker2018_backend_2
             var context = serviceProvider.GetService<DatabaseContext>();
             context.Database.Migrate();
             DataSeeder.SeedUserRoles(context);
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,6 +64,8 @@ namespace PlanningPoker2018_backend_2
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+            app.UseCors(options => options.AllowAnyOrigin());
+
 
 
             var wsHostServer = new HostServer();
