@@ -11,9 +11,10 @@ using System;
 namespace PlanningPoker2018_backend_2.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20180521190659_AddProjectTaskModel")]
+    partial class AddProjectTaskModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,11 +26,11 @@ namespace PlanningPoker2018_backend_2.Migrations
                     b.Property<int>("id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int>("RoomId");
-
                     b.Property<int?>("authorid");
 
                     b.Property<int>("estimate");
+
+                    b.Property<int>("roomid");
 
                     b.Property<string>("title")
                         .IsRequired();
@@ -37,6 +38,8 @@ namespace PlanningPoker2018_backend_2.Migrations
                     b.HasKey("id");
 
                     b.HasIndex("authorid");
+
+                    b.HasIndex("roomid");
 
                     b.ToTable("ProjectTask");
                 });
@@ -62,12 +65,11 @@ namespace PlanningPoker2018_backend_2.Migrations
                     b.Property<string>("name")
                         .IsRequired();
 
-                    b.Property<int>("roleId")
-                        .HasColumnName("roleId");
+                    b.Property<int>("roleid");
 
                     b.HasKey("id");
 
-                    b.HasIndex("roleId");
+                    b.HasIndex("roleid");
 
                     b.ToTable("User");
                 });
@@ -90,13 +92,18 @@ namespace PlanningPoker2018_backend_2.Migrations
                     b.HasOne("PlanningPoker2018_backend_2.Models.User", "author")
                         .WithMany()
                         .HasForeignKey("authorid");
+
+                    b.HasOne("PlanningPoker2018_backend_2.Models.Room", "room")
+                        .WithMany()
+                        .HasForeignKey("roomid")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("PlanningPoker2018_backend_2.Models.User", b =>
                 {
                     b.HasOne("PlanningPoker2018_backend_2.Models.UserRole", "role")
                         .WithMany()
-                        .HasForeignKey("roleId")
+                        .HasForeignKey("roleid")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
