@@ -68,9 +68,6 @@ namespace PlanningPoker2018_backend_2
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-            
-
-
 
             var wsHostServer = new HostServer();
         }
