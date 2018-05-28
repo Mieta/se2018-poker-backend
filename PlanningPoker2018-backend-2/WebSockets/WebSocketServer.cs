@@ -1,0 +1,25 @@
+﻿using PlanningPoker2018_backend_2.Fleck;
+using PlanningPoker2018_backend_2.Fleck.Interfaces;
+
+namespace PlanningPoker2018_backend_2.WebSockets
+{
+    public abstract class AppWebSocketServer : IWebSocketHandler
+    {
+        protected WebSocketServer server;
+
+        public AppWebSocketServer(string Location)
+        {
+            server = new WebSocketServer(Location);
+            server.Start(socket =>
+            {
+                socket.OnOpen = () => handleNewSocket(socket);
+                socket.OnClose = () => handleSocketClose(socket);
+                socket.OnMessage = (message) => handleNewMessage(socket, message);
+            });
+        }
+
+        public abstract void handleNewSocket(IWebSocketConnection socket);
+        public abstract void handleSocketClose(IWebSocketConnection socket);
+        public abstract void handleNewMessage(IWebSocketConnection socket, string message);
+    }
+}
