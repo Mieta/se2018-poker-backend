@@ -1,35 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Fleck;
 
 namespace PlanningPoker2018_backend_2.WebSockets
 {
-    public class HostServer
+    public class HostServer : AppWebSocketServer
+
     {
-        private WebSocketServer server;
-        private static List<IWebSocketConnection> activeSockets = new List<IWebSocketConnection>();
+        private static readonly List<IWebSocketConnection> _activeSockets = new List<IWebSocketConnection>();
 
-        public HostServer()
+        public HostServer() : base("ws://localhost:3001")
         {
-            server = new WebSocketServer("ws://0.0.0.0:3001");
-            server.Start(socket =>
-            {
-                socket.OnOpen = () => handleNewSocket(socket);
-                socket.OnClose = () => handleSocketClose(socket);
-                socket.OnMessage = message => activeSockets.ForEach(s => s.Send(message));
-            });
         }
 
-        private static void handleSocketClose(IWebSocketConnection socket)
+        public override void handleSocketClose(IWebSocketConnection socket)
         {
-            activeSockets.Add(socket);
+            _activeSockets.Add(socket);
         }
 
-        private static void handleNewSocket(IWebSocketConnection socket)
+        public override void handleNewMessage(string message)
         {
-            activeSockets.Remove(socket);
+            _activeSockets.ForEach(s => s.Send(message));
+        }
+
+        public override void handleNewSocket(IWebSocketConnection socket)
+        {
+            _activeSockets.Remove(socket);
         }
     }
 }
