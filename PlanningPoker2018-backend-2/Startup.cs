@@ -69,7 +69,8 @@ namespace PlanningPoker2018_backend_2
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            var wsHostServer = new HostServer();
+            HostServer.initialize();
+            ClientServer.initialize();
         }
     }
 }

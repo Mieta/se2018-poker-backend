@@ -6,7 +6,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
     {
         void handleNewSocket(IWebSocketConnection socket);
         void handleSocketClose(IWebSocketConnection socket);
-        void handleNewMessage(string message);
+        void handleNewMessage(IWebSocketConnection socket, string message);
 
     }
 }

@@ -13,12 +13,12 @@ namespace PlanningPoker2018_backend_2.WebSockets
             {
                 socket.OnOpen = () => handleNewSocket(socket);
                 socket.OnClose = () => handleSocketClose(socket);
-                socket.OnMessage = handleNewMessage;
+                socket.OnMessage = (message) => handleNewMessage(socket, message);
             });
         }
 
         public abstract void handleNewSocket(IWebSocketConnection socket);
         public abstract void handleSocketClose(IWebSocketConnection socket);
-        public abstract void handleNewMessage(string message);
+        public abstract void handleNewMessage(IWebSocketConnection socket, string message);
     }
 }
