@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlanningPoker2018_backend_2.Controllers;
@@ -8,9 +7,9 @@ using Xunit;
 
 namespace PlanningPoker2018_backend.Tests
 {
-    public class RoomsControllerUnitTests
+    public class ProjectTasksControllerUnitTests
     {
-        public RoomsControllerUnitTests()
+        public ProjectTasksControllerUnitTests()
         {
             InitializeContext();
         }
@@ -24,21 +23,35 @@ namespace PlanningPoker2018_backend.Tests
         }
 
         [Fact]
-        public void Get_ShouldReturnTwoRooms()
+        public void Get_ShouldReturnTwoTasks()
         {
-            ClearRoomsFromDatabase();
-            var controller = new RoomsController(context);
-            context.Room.Add(new Room {id = 1, name = "Pokój 1", link = "https://localhost:4200/room/1" });
-            context.Room.Add(new Room { id = 2, name = "Pokój 2", link = "https://localhost:4200/room/2" });
+            ClearTasksFromDatabase();
+            var controller = new ProjectTasksController(context);
+            context.ProjectTask.Add(new ProjectTask
+            {
+                id = 1,
+                title = "Zadanie 1",
+                author = new User(),
+                RoomId = 1,
+                estimate = 5
+            });
+            context.ProjectTask.Add(new ProjectTask
+            {
+                id = 2,
+                title = "Zadanie 2",
+                author = new User(),
+                RoomId = 1,
+                estimate = 5
+            });
             context.SaveChanges();
-            IEnumerable<Room> result = controller.GetRooms();
-            Assert.Equal(2, result.Count());
+            var projectTasks = controller.GetProjectTasks();
+            Assert.Equal(2, projectTasks.Count());
         }
 
         [Fact]
-        public async void Put_ShouldAddNewRoom()
+        public async void Put_ShouldAddNewTask()
         {
-            ClearRoomsFromDatabase();
+            ClearTasksFromDatabase();
             var controller = new RoomsController(context);
             var room = new Room { id = 1, name = "Pokój świeżo dodany" };
             var result = await controller.PutRoom(room);
@@ -48,10 +61,10 @@ namespace PlanningPoker2018_backend.Tests
             Assert.Contains(context.Room, p => p.name.Equals("Pokój świeżo dodany") && p.id.Equals(1));
         }
 
-        private void ClearRoomsFromDatabase()
+        private void ClearTasksFromDatabase()
         {
-            foreach (var room in context.Room)
-                context.Room.Remove(room);
+            foreach (var task in context.ProjectTask)
+                context.ProjectTask.Remove(task);
             context.SaveChanges();
         }
     }
