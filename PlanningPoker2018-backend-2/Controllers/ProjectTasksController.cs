@@ -28,10 +28,10 @@ namespace PlanningPoker2018_backend_2.Controllers
         }
 
         // GET: api/tasks/{roomId}
-        [HttpGet("{roomId}")]
-        public IEnumerable<ProjectTask> GetProjectTaskForRoom([FromRoute] int roomId)
+        [HttpGet]
+        public ProjectTask GetProjectTask(int id)
         {
-            return _context.ProjectTask.Where(t => t.RoomId.Equals(roomId));
+            return _context.ProjectTask.First(t => t.id == id);
         }
 
         

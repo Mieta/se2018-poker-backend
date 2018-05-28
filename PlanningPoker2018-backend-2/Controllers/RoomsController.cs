@@ -26,6 +26,18 @@ namespace PlanningPoker2018_backend_2.Controllers
             return _context.Room.ToList();
         }
 
+        [HttpGet]
+        public Room getRoom(int id)
+        {
+            return _context.Room.First(r => r.id == id);
+        }
+
+        [HttpGet("{roomId}/tasks")]
+        public IEnumerable<ProjectTask> GetProjectTaskForRoom([FromRoute] int roomId)
+        {
+            return _context.ProjectTask.Where(t => t.RoomId.Equals(roomId));
+        }
+
         // PUT: api/rooms
         [HttpPut]
         public async Task<IActionResult> PutRoom([FromBody] Room room)

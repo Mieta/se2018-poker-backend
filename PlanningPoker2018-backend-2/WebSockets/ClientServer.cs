@@ -30,7 +30,6 @@ namespace PlanningPoker2018_backend_2.WebSockets
         {
             var socketsList = _activeSockets.Values.First(list => list.Contains(socket));
             socketsList.Remove(socket);
-            Console.WriteLine(socketsList.Count);
         }
 
         public override void handleNewMessage(IWebSocketConnection socket, string message)
