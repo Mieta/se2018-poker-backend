@@ -1,10 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Fleck;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PlanningPoker2018_backend_2.Entities;
+using PlanningPoker2018_backend_2.Fleck.Interfaces;
 
 namespace PlanningPoker2018_backend_2.WebSockets
 {

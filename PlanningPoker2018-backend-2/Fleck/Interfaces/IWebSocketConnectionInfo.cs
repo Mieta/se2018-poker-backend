@@ -1,7 +1,7 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 
-namespace Fleck
+namespace PlanningPoker2018_backend_2.Fleck.Interfaces
 {
     public interface IWebSocketConnectionInfo
     {

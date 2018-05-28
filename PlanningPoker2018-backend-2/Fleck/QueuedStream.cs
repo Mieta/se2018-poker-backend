@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
-namespace Fleck
+namespace PlanningPoker2018_backend_2.Fleck
 {
     /// <summary>
     /// Wraps a stream and queues multiple write operations.

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using PlanningPoker2018_backend_2.Fleck.Interfaces;
 
-namespace Fleck.Handlers
+namespace PlanningPoker2018_backend_2.Fleck.Handlers
 {
     public static class Draft76Handler
     {

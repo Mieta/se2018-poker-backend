@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Fleck
+namespace PlanningPoker2018_backend_2.Fleck
 {
     public class RequestParser
     {

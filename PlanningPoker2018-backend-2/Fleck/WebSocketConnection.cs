@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using PlanningPoker2018_backend_2.Fleck.Interfaces;
 
-namespace Fleck
+namespace PlanningPoker2018_backend_2.Fleck
 {
   public class WebSocketConnection : IWebSocketConnection
   {

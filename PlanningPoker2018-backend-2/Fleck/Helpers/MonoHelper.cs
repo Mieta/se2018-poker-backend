@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Fleck.Helpers
+namespace PlanningPoker2018_backend_2.Fleck.Helpers
 {
   public static class MonoHelper
   {

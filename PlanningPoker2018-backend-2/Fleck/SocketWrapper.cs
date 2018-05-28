@@ -5,11 +5,12 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using System.Threading;
-using Fleck.Helpers;
+using System.Threading.Tasks;
+using PlanningPoker2018_backend_2.Fleck.Helpers;
+using PlanningPoker2018_backend_2.Fleck.Interfaces;
 
-namespace Fleck
+namespace PlanningPoker2018_backend_2.Fleck
 {
     public class SocketWrapper : ISocket
     {

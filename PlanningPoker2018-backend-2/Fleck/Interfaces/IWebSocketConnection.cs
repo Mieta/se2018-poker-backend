@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Fleck
+namespace PlanningPoker2018_backend_2.Fleck.Interfaces
 {
     public interface IWebSocketConnection
     {

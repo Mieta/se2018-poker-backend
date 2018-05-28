@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 
-namespace Fleck
+namespace PlanningPoker2018_backend_2.Fleck
 {
     public class ReadState
     {

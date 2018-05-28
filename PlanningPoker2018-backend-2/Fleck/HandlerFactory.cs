@@ -1,7 +1,8 @@
 using System;
-using Fleck.Handlers;
+using PlanningPoker2018_backend_2.Fleck.Handlers;
+using PlanningPoker2018_backend_2.Fleck.Interfaces;
 
-namespace Fleck
+namespace PlanningPoker2018_backend_2.Fleck
 {
     public class HandlerFactory
     {

@@ -1,12 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
-using System.Collections.Generic;
 using System.Security.Authentication;
-using Fleck.Helpers;
+using System.Security.Cryptography.X509Certificates;
+using PlanningPoker2018_backend_2.Fleck.Helpers;
+using PlanningPoker2018_backend_2.Fleck.Interfaces;
 
-namespace Fleck
+namespace PlanningPoker2018_backend_2.Fleck
 {
     public class WebSocketServer : IWebSocketServer
     {

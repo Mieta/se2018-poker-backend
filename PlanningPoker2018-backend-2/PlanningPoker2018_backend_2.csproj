@@ -13,10 +13,4 @@
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Fleck-lib\src\Fleck\Fleck.csproj">
-      <Project>{822BC744-5049-4C78-818C-321755D8308D}</Project>
-      <Name>Fleck</Name>
-    </ProjectReference>
-  </ItemGroup>
 </Project>

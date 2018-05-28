@@ -1,12 +1,11 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace Fleck
+namespace PlanningPoker2018_backend_2.Fleck.Interfaces
 {
     public interface ISocket
     {
