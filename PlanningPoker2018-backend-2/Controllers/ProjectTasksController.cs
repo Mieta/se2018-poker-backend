@@ -53,17 +53,14 @@ namespace PlanningPoker2018_backend_2.Controllers
 
         // Patch: api/tasks/{taskId}
         [HttpPatch("{taskId}")]
-        public async Task<IActionResult> ChangeProjectTaskEstimate(int taskId, int estimate)
+        public async Task<IActionResult> PatchProjectTaskEstimate(int taskId, int estimate)
         {
-            Console.WriteLine("START");
-            Console.Write(ModelState);
-            Console.WriteLine("END");
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            ProjectTask projectTask = new ProjectTask() {id = taskId, estimate = estimate};
+            var projectTask = new ProjectTask() {id = taskId, estimate = estimate};
             _context.ProjectTask.Attach(projectTask);
             _context.Entry(projectTask).Property(t => t.estimate).IsModified = true;
             await _context.SaveChangesAsync();

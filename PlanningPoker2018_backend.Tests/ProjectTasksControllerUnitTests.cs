@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlanningPoker2018_backend_2.Controllers;
@@ -19,6 +20,7 @@ namespace PlanningPoker2018_backend.Tests
         private void InitializeContext()
         {
             var builder = new DbContextOptionsBuilder<DatabaseContext>().UseInMemoryDatabase("Planning-Poker-DB");
+            builder.EnableSensitiveDataLogging();
             context = new DatabaseContext(builder.Options);
         }
 
@@ -53,12 +55,36 @@ namespace PlanningPoker2018_backend.Tests
         {
             ClearTasksFromDatabase();
             var controller = new RoomsController(context);
-            var room = new Room { id = 1, name = "Pokój świeżo dodany" };
+            var room = new Room {id = 1, name = "Pokój świeżo dodany"};
             var result = await controller.PutRoom(room);
             var typeResult = Assert.IsType<CreatedAtActionResult>(result);
             Assert.NotNull(typeResult.StatusCode);
             Assert.Equal(201, typeResult.StatusCode.Value);
             Assert.Contains(context.Room, p => p.name.Equals("Pokój świeżo dodany") && p.id.Equals(1));
+        }
+
+        [Fact]
+        public async void Patch_ShouldChangeTaskEstimateTo_5()
+        {
+            ClearTasksFromDatabase();
+            var taskId = 1;
+            var expectedEstimate = 5;
+            var projectTask = new ProjectTask()
+            {
+                id = taskId,
+                title = "test task 1",
+                author = new User(),
+                RoomId = 1,
+                estimate = 1
+            };
+            context.ProjectTask.Add(projectTask);
+            context.SaveChanges();
+            context.Entry(projectTask).State = EntityState.Detached;
+            
+            var controller = new ProjectTasksController(context);
+            var result = await controller.PatchProjectTaskEstimate(taskId, expectedEstimate);
+            var projectTaskEstimate = context.ProjectTask.Find(taskId).estimate;
+            Assert.Equal(expectedEstimate, projectTaskEstimate);
         }
 
         private void ClearTasksFromDatabase()
