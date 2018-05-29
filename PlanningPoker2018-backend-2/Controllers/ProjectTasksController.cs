@@ -28,7 +28,7 @@ namespace PlanningPoker2018_backend_2.Controllers
         }
 
         // GET: api/tasks/{roomId}
-        [HttpGet]
+        [HttpGet("{id}")]
         public ProjectTask GetProjectTask(int id)
         {
             return _context.ProjectTask.First(t => t.id == id);
@@ -37,7 +37,7 @@ namespace PlanningPoker2018_backend_2.Controllers
         
         // PUT: api/tasks
         [HttpPut]
-        public async Task<IActionResult> PostProjectTask([FromBody] ProjectTask projectTask)
+        public async Task<IActionResult> CreateProjectTask([FromBody] ProjectTask projectTask)
         {
             if (!ModelState.IsValid)
             {
@@ -48,6 +48,19 @@ namespace PlanningPoker2018_backend_2.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetProjectTask", new { id = projectTask.id }, projectTask);
+        }
+
+        [HttpPost("{id}/status/{statusName}")]
+        public async Task<IActionResult> UpdateTaskStatus([FromRoute] int id, [FromRoute] String statusName)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }
