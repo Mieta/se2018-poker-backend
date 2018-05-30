@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -19,7 +20,7 @@ namespace PlanningPoker2018_backend_2.Controllers
         {
             _context = context;
         }
-        
+
         [HttpGet]
         public IEnumerable<Room> GetRooms()
         {
@@ -52,14 +53,26 @@ namespace PlanningPoker2018_backend_2.Controllers
 
             room.link = "https://online-planning-poker.herokuapp.com/room/participant/" + room.id.ToString();
 
-            return CreatedAtAction("GetRoom", new { id = room.id }, room);
+            return CreatedAtAction("GetRoom", new {id = room.id}, room);
         }
 
-    
-
-        private bool RoomExists(int id)
+        // GET: api/rooms/{roomId}/summary
+        [HttpGet("{roomId}")]
+        public GameSummary GetGameSummary(int roomId)
         {
-            return _context.Room.Any(e => e.id == id);
+            var roomName = _context.Room.First(r => r.id == roomId).name;
+            var users = _context.User.Where(u => u.roomId == roomId).ToArray();
+            var roomTasks = _context.ProjectTask.Where(task => task.RoomId == roomId).ToArray();
+            var currentDate = DateTime.Now;
+
+            return new GameSummary()
+            {
+                date = currentDate.ToString(new CultureInfo("pl-PL")),
+                participants = users,
+                roomName = roomName,
+                tasks = roomTasks
+            };
         }
+        
     }
 }
