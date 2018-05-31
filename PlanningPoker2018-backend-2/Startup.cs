@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -26,7 +27,7 @@ namespace PlanningPoker2018_backend_2
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-
+            
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
                 services.AddDbContext<DatabaseContext>(options =>
                         options.UseSqlServer(Configuration.GetConnectionString("DB_CONNECTION_STRING")));
@@ -38,7 +39,7 @@ namespace PlanningPoker2018_backend_2
             var context = serviceProvider.GetService<DatabaseContext>();
             context.Database.Migrate();
             DataSeeder.SeedUserRoles(context);
-            services.AddCors();
+            services.AddCors();            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -67,9 +68,15 @@ namespace PlanningPoker2018_backend_2
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+            var wsOptions = new WebSocketOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromSeconds(120),
+                ReceiveBufferSize = 4 * 1024
+            };
+            app.UseWebSockets(wsOptions);             
 
-            HostServer.initialize();
-            ClientServer.initialize();
+            HostServer.initialize(app, "/host");
+            ClientServer.initialize(app, "/client");
         }
     }
 }

@@ -2,6 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
 using PlanningPoker2018_backend_2.Entities;
 using PlanningPoker2018_backend_2.Fleck.Interfaces;
@@ -15,51 +18,61 @@ namespace PlanningPoker2018_backend_2.WebSockets
 
         public static ClientServer Instance => _instance;
 
-        public static void initialize()
+        public static void initialize(IApplicationBuilder app, string path)
         {
-            _instance = new ClientServer();
+            _instance = new ClientServer(app, path);
         }
         
-        private readonly ConcurrentDictionary<string, List<IWebSocketConnection>> _activeSockets = new ConcurrentDictionary<string, List<IWebSocketConnection>>();
+        private readonly ConcurrentDictionary<string, List<AppWebSocket>> _activeSockets = new ConcurrentDictionary<string, List<AppWebSocket>>();
 
-        public ClientServer() : base("ws://0.0.0.0:3002")
+        public ClientServer(IApplicationBuilder app, string path) : base(app, path)
         {
         }
 
-        public override void handleSocketClose(IWebSocketConnection socket)
-        {
-            var socketsList = _activeSockets.Values.First(list => list.Contains(socket));
-            socketsList.Remove(socket);
-        }
-
-        public override void handleNewMessage(IWebSocketConnection socket, string message)
+        public async override void handleNewMessage(AppWebSocket socket, string message)
         {
             var parsedMessage = JsonConvert.DeserializeObject<WebSocketMessage>(message);
-            if (parsedMessage.type == "init-ws")
-            {
-                if (!_activeSockets.ContainsKey(parsedMessage.roomId))
-                {
-                    _activeSockets.TryAdd(parsedMessage.roomId, new List<IWebSocketConnection>());
-                }
-                _activeSockets[parsedMessage.roomId].Add(socket);
-                var confirmationMessage =
-                    new WebSocketMessage() {type = "sockets-ready", roomId = parsedMessage.roomId};
-                var serializedMessage = JsonConvert.SerializeObject(confirmationMessage);
-                socket.Send(serializedMessage);
-            }
-            else
-            {
-                HostServer.Instance.sendToHost(parsedMessage.roomId, message);   
-            }
+            var messageType = parsedMessage.type;
+            await HostServer.Instance.sendToHost(parsedMessage.roomId, message);
         }
 
-        public override void handleNewSocket(IWebSocketConnection socket)
+        public async override Task handleNewSocket(AppWebSocket socket)
         {
+            socket.OnMessageReceived += handleNewMessage;
+            socket.OnOpen += Socket_OnOpen;
+            socket.OnClose += Socket_OnClose;
+            await socket.Initialize();
+
+        }
+
+        private void Socket_OnClose(AppWebSocket sender, string roomId)
+        {
+            var socketsList = _activeSockets.Values.First(list => list.Contains(sender));
+            socketsList.Remove(sender);
+        }
+
+        private async void Socket_OnOpen(AppWebSocket sender, string roomId)
+        {
+            if(!_activeSockets.ContainsKey(roomId))
+            {
+                _activeSockets.TryAdd(roomId, new List<AppWebSocket>() { sender });
+            } else
+            {
+                _activeSockets[roomId].Add(sender);
+            }
+            var socketsReadyMessage = new WebSocketMessage() { type = "sockets-ready", roomId = roomId };
+            var serializedMessage = JsonConvert.SerializeObject(socketsReadyMessage);
+            await sender.Send(serializedMessage);
         }
 
         public void sendToAllInRoom(string roomId, string message)
         {
-            _activeSockets[roomId].ForEach(s => s.Send(message));
+            _activeSockets[roomId].ForEach(async s => await s.Send(message));
+        }
+
+        public override void handleSocketClose(AppWebSocket socket)
+        {
+            
         }
     }
 }

@@ -1,5 +1,8 @@
-﻿using PlanningPoker2018_backend_2.Fleck;
+﻿using Microsoft.AspNetCore.Builder;
+using PlanningPoker2018_backend_2.Fleck;
 using PlanningPoker2018_backend_2.Fleck.Interfaces;
+using System.Net.WebSockets;
+using System.Threading.Tasks;
 
 namespace PlanningPoker2018_backend_2.WebSockets
 {
@@ -7,19 +10,32 @@ namespace PlanningPoker2018_backend_2.WebSockets
     {
         protected WebSocketServer server;
 
-        public AppWebSocketServer(string Location)
+        public AppWebSocketServer(IApplicationBuilder app, string Location)
         {
-            server = new WebSocketServer(Location);
-            server.Start(socket =>
+            app.Use(async (context, next) =>
             {
-                socket.OnOpen = () => handleNewSocket(socket);
-                socket.OnClose = () => handleSocketClose(socket);
-                socket.OnMessage = (message) => handleNewMessage(socket, message);
+                if (context.Request.Path == Location)
+                {
+                    if (context.WebSockets.IsWebSocketRequest)
+                    {
+                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        AppWebSocket appWebSocket = new AppWebSocket(webSocket);
+                        await handleNewSocket(appWebSocket);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 400;
+                    }
+                }
+                else
+                {
+                    await next();
+                }
             });
         }
 
-        public abstract void handleNewSocket(IWebSocketConnection socket);
-        public abstract void handleSocketClose(IWebSocketConnection socket);
-        public abstract void handleNewMessage(IWebSocketConnection socket, string message);
+        public abstract Task handleNewSocket(AppWebSocket socket);
+        public abstract void handleSocketClose(AppWebSocket socket);
+        public abstract void handleNewMessage(AppWebSocket socket, string message);
     }
 }
