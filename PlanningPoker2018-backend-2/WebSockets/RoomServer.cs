@@ -40,11 +40,13 @@ namespace PlanningPoker2018_backend_2.WebSockets
         {
             var parsedMessage = JsonConvert.DeserializeObject<WebSocketMessage>(message);
             var messageType = parsedMessage.type;
+            //WORKAROUND to fix problem with end of message
+            var messageToSend = JsonConvert.SerializeObject(parsedMessage);
             if(_activeRooms.ContainsKey(parsedMessage.roomId))
             {
                 try
                 {
-                    await _activeRooms[parsedMessage.roomId].handleSendingMessage(socket, message);
+                    await _activeRooms[parsedMessage.roomId].handleSendingMessage(socket, messageToSend);
                 } 
                 catch(WebSocketException ex)
                 {
