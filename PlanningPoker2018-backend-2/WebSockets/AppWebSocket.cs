@@ -14,11 +14,12 @@ namespace PlanningPoker2018_backend_2.WebSockets
         private WebSocket socket;
 
         public event MessageReceivedEventHandler OnMessageReceived;
-        public event ConnectionStateChangedEventHandler OnOpen;
-        public event ConnectionStateChangedEventHandler OnClose;
+        public event ConnectionOpenedEventHandler OnOpen;
+        public event ConnectionClosedEventHandler OnClose;
 
         public delegate void MessageReceivedEventHandler(AppWebSocket sender, string message);
-        public delegate void ConnectionStateChangedEventHandler(AppWebSocket sender, string roomId);
+        public delegate void ConnectionOpenedEventHandler(AppWebSocket sender, string roomId, Boolean isClientSocket);
+        public delegate void ConnectionClosedEventHandler(AppWebSocket sender, string roomId);
 
 
         public AppWebSocket(WebSocket webSocket)
@@ -34,7 +35,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
             var initialMessage = System.Text.Encoding.Default.GetString(buffer);
             var parsedMessage = JsonConvert.DeserializeObject<WebSocketMessage>(initialMessage);
             Array.Clear(buffer, 0, buffer.Length);
-            while(parsedMessage.type != "init-ws")
+            while(parsedMessage.type != "init-host" && parsedMessage.type != "init-client")
             {
                 string initErrorMessage = "{'message': 'Web socket was not initialized. Send initialization message first.'}";
                 await Send(initErrorMessage);
@@ -43,7 +44,8 @@ namespace PlanningPoker2018_backend_2.WebSockets
                 parsedMessage = JsonConvert.DeserializeObject<WebSocketMessage>(message);
                 Array.Clear(buffer, 0, buffer.Length);
             }
-            OnOpen(this, parsedMessage.roomId);
+            bool isClientSocket = parsedMessage.type == "init-client";
+            OnOpen(this, parsedMessage.roomId, isClientSocket);
             while (!wsresult.CloseStatus.HasValue)
             {
                 wsresult = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
