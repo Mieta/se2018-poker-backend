@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PlanningPoker2018_backend_2.Entities;
 using PlanningPoker2018_backend_2.Models;
+using TaskStatus = PlanningPoker2018_backend_2.Entities.TaskStatus;
 
 namespace PlanningPoker2018_backend_2.Controllers
 {
@@ -29,7 +31,7 @@ namespace PlanningPoker2018_backend_2.Controllers
         }
 
         // GET: api/tasks/{roomId}
-        [HttpGet]
+        [HttpGet("{id}")]
         public ProjectTask GetProjectTask(int id)
         {
             return _context.ProjectTask.First(t => t.id == id);
@@ -38,7 +40,7 @@ namespace PlanningPoker2018_backend_2.Controllers
 
         // PUT: api/tasks
         [HttpPut]
-        public async Task<IActionResult> PostProjectTask([FromBody] ProjectTask projectTask)
+        public async Task<IActionResult> CreateProjectTask([FromBody] ProjectTask projectTask)
         {
             if (!ModelState.IsValid)
             {
@@ -70,6 +72,32 @@ namespace PlanningPoker2018_backend_2.Controllers
                 id = projectTask.id,
                 estimate = projectTask.estimate
             });
+        }
+
+        [HttpPost("{id}/status/{statusName}")]
+        public async Task<IActionResult> UpdateTaskStatus([FromRoute] int id, [FromRoute] String statusName)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            TaskStatus newStatus;
+            try
+            {
+                newStatus = TaskStatus.getByName(statusName);
+            }
+            catch (StatusNotFoundException ex)
+            {
+                return BadRequest(new BasicResponse() {message = "Wrong status provided"});
+            }
+
+            var task = new ProjectTask() {id = id, status = newStatus.name};
+            _context.ProjectTask.Attach(task);
+            _context.Entry(task).Property(t => t.status).IsModified = true;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }
