@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -50,6 +51,27 @@ namespace PlanningPoker2018_backend_2.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetProjectTask", new {id = projectTask.id}, projectTask);
+        }
+
+        // Patch: api/tasks/{taskId}
+        [HttpPatch("{taskId}")]
+        public async Task<IActionResult> PatchProjectTaskEstimate(int taskId, int estimate)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var projectTask = new ProjectTask() {id = taskId, estimate = estimate};
+            _context.ProjectTask.Attach(projectTask);
+            _context.Entry(projectTask).Property(t => t.estimate).IsModified = true;
+            await _context.SaveChangesAsync();
+
+            return AcceptedAtAction("ChangeProjectTaskEstimate", new
+            {
+                id = projectTask.id,
+                estimate = projectTask.estimate
+            });
         }
 
         [HttpPost("{id}/status/{statusName}")]
