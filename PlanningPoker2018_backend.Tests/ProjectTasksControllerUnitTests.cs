@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlanningPoker2018_backend_2.Controllers;
+using PlanningPoker2018_backend_2.Entities;
 using PlanningPoker2018_backend_2.Models;
 using Xunit;
 
@@ -52,14 +54,33 @@ namespace PlanningPoker2018_backend.Tests
         public async void Put_ShouldAddNewTask()
         {
             ClearTasksFromDatabase();
-            var controller = new RoomsController(context);
-            var room = new Room { id = 1, name = "Pokój świeżo dodany" };
-            var result = await controller.PutRoom(room);
+            var controller = new ProjectTasksController(context);
+            var task = new ProjectTask { title = "Zadanie testowe", RoomId = 1, status = TaskStatus.UNESTIMATED.name };
+            var result = await controller.CreateProjectTask(task);
             var typeResult = Assert.IsType<CreatedAtActionResult>(result);
             Assert.NotNull(typeResult.StatusCode);
             Assert.Equal(201, typeResult.StatusCode.Value);
-            Assert.Contains(context.Room, p => p.name.Equals("Pokój świeżo dodany") && p.id.Equals(1));
+            Assert.Contains(context.ProjectTask, p => p.title.Equals("Zadanie testowe") && p.id.Equals(task.id));
         }
+
+        [Fact]
+        public async void Post_ShouldChangeTaskStatusToVoting()
+        {
+            ClearTasksFromDatabase();
+            var task = new ProjectTask() { title = "Zadanie testowe", RoomId = 1, status = TaskStatus.UNESTIMATED.name };
+            context.ProjectTask.Add(task);
+            context.SaveChanges();
+            context.Entry(task).State = EntityState.Detached;
+
+            var controller = new ProjectTasksController(context);
+            var result = await controller.UpdateTaskStatus(task.id, TaskStatus.VOTING.name);
+            var updatedTask = context.ProjectTask.First(t => t.id == task.id);
+            var typeResult = Assert.IsType<NoContentResult>(result);
+
+            Assert.Equal(204, typeResult.StatusCode);
+            Assert.Equal(TaskStatus.VOTING.name, updatedTask.status);
+        }
+
 
         private void ClearTasksFromDatabase()
         {

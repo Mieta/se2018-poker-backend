@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 
 namespace PlanningPoker2018_backend_2.Entities
 {
@@ -6,6 +7,6 @@ namespace PlanningPoker2018_backend_2.Entities
     {
         public String roomId { get; set; }
         public String type { get; set; }
-        public String content { get; set; }
+        public JObject content { get; set; }
     }
 }

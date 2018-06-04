@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PlanningPoker2018_backend_2.Models;
+using TaskStatus = PlanningPoker2018_backend_2.Entities.TaskStatus;
 
 namespace PlanningPoker2018_backend_2.Models
 {
@@ -14,6 +15,9 @@ namespace PlanningPoker2018_backend_2.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<ProjectTask>()
+                .Property(t => t.status)
+                .HasDefaultValue(TaskStatus.UNESTIMATED.name);
         }
 
         public DbSet<PlanningPoker2018_backend_2.Models.Room> Room { get; set; }
