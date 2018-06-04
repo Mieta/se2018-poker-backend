@@ -16,5 +16,7 @@ namespace PlanningPoker2018_backend_2.Models
         [Required]
         public int RoomId { get; set; }
         public int estimate { get; set; }
+        
+        public String status { get; set; }
     }
 }
