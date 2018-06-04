@@ -57,7 +57,7 @@ namespace PlanningPoker2018_backend_2.Controllers
         }
 
         // GET: api/rooms/{roomId}/summary
-        [HttpGet("{roomId}")]
+        [HttpGet("{roomId}/summary")]
         public GameSummary GetGameSummary(int roomId)
         {
             var roomName = _context.Room.First(r => r.id == roomId).name;
