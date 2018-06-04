@@ -20,11 +20,44 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context = context;
         }
 
-        // GET: api/Users
-        [HttpGet]
-        public IEnumerable<User> GetUser()
+        // GET: api/Users/{userId}
+        [HttpGet("userId")]
+        public User GetUser(int userId)
         {
-            return _context.User;
+            return _context.User.First(u => u.id == userId);
+        }
+
+
+        //POST: api/Users/join
+        [HttpPost]
+        public async Task<IActionResult> AddUser([FromBody] User user)
+        {
+            user.roleId = 2;
+            if (ModelState.IsValid)
+            {
+                _context.User.Add(user);
+                return CreatedAtAction("AddUser", user);
+            }
+            return BadRequest();
+        }
+        
+        //POST: api/Users/po/join
+        [HttpPost]
+        public async Task<IActionResult> AddProductOwnerUser([FromBody] User user)
+        {
+            user.roleId = 1;
+            if (ModelState.IsValid)
+            {
+                _context.User.Add(user);
+                return CreatedAtAction("AddUser", user);
+            }
+            return BadRequest();
+        }
+
+
+        private bool RoomExists(int id)
+        {
+            return _context.Room.Any(e => e.id == id);
         }
     }
 }
