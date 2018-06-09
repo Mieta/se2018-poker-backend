@@ -66,7 +66,7 @@ namespace PlanningPoker2018_backend_2.Controllers
                 return BadRequest(ModelState);
             }
 
-            user.password = BCrypt.Net.BCrypt.HashPassword(user.password, 15);
+            user.password = BCrypt.Net.BCrypt.HashPassword(user.password, 11);
             if (isUserExists(user))
             {
                 return BadRequest(new BasicResponse {message = "User already exists"});
