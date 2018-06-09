@@ -8,7 +8,7 @@ namespace PlanningPoker2018_backend_2.Models
     {
         [Key] public int id { get; set; }
         [Required] public string name { get; set; }
-        public string creator { get; set; }
+        [Required] public string creator { get; set; }
         [NotMapped] public List<TeamMember> members { get; set; }
     }
 }

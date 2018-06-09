@@ -24,7 +24,9 @@ namespace PlanningPoker2018_backend_2.Controllers
         [HttpGet]
         public IEnumerable<EstimationTeam> GetEstimationTeam()
         {
-            return _context.EstimationTeam;
+            var estimationTeams = _context.EstimationTeam.ToList();
+            estimationTeams.ForEach(t => { t.members = _context.TeamMember.Where(m => m.teamId == t.id).ToList(); });
+            return estimationTeams;
         }
 
         // GET: api/EstimationTeams/5
@@ -43,47 +45,13 @@ namespace PlanningPoker2018_backend_2.Controllers
                 return NotFound();
             }
 
+            estimationTeam.members = _context.TeamMember.Where(tm => tm.teamId == estimationTeam.id).ToList();
             return Ok(estimationTeam);
         }
 
-        // PUT: api/EstimationTeams/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutEstimationTeam([FromRoute] int id, [FromBody] EstimationTeam estimationTeam)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != estimationTeam.id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(estimationTeam).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!EstimationTeamExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/EstimationTeams
-        [HttpPost]
-        public async Task<IActionResult> PostEstimationTeam([FromBody] EstimationTeam estimationTeam)
+        // PUT: api/EstimationTeams
+        [HttpPut]
+        public async Task<IActionResult> PutNewEstimationTeam([FromBody] EstimationTeam estimationTeam)
         {
             if (!ModelState.IsValid)
             {
@@ -93,33 +61,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.EstimationTeam.Add(estimationTeam);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetEstimationTeam", new { id = estimationTeam.id }, estimationTeam);
-        }
-
-        // DELETE: api/EstimationTeams/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEstimationTeam([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var estimationTeam = await _context.EstimationTeam.SingleOrDefaultAsync(m => m.id == id);
-            if (estimationTeam == null)
-            {
-                return NotFound();
-            }
-
-            _context.EstimationTeam.Remove(estimationTeam);
-            await _context.SaveChangesAsync();
-
-            return Ok(estimationTeam);
-        }
-
-        private bool EstimationTeamExists(int id)
-        {
-            return _context.EstimationTeam.Any(e => e.id == id);
+            return CreatedAtAction("GetEstimationTeam", new {id = estimationTeam.id}, estimationTeam);
         }
     }
 }

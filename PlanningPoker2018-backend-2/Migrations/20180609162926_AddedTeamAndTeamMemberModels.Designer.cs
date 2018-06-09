@@ -11,9 +11,10 @@ using System;
 namespace PlanningPoker2018_backend_2.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20180609162926_AddedTeamAndTeamMemberModels")]
+    partial class AddedTeamAndTeamMemberModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,8 +26,7 @@ namespace PlanningPoker2018_backend_2.Migrations
                     b.Property<int>("id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("creator")
-                        .IsRequired();
+                    b.Property<string>("creator");
 
                     b.Property<string>("name")
                         .IsRequired();
