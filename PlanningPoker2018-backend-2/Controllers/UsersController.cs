@@ -93,10 +93,12 @@ namespace PlanningPoker2018_backend_2.Controllers
             {
                 return NotFound(new BasicResponse {message = "User not found"});
             }
+
             var user = _context.User.First(u => u.mailAddress == mailAddress);
             var participantRefs = _context.RoomParticipant.Where(rp => rp.mailAddress.Equals(user.mailAddress));
-            var rooms = _context.Room.Where(r => r.hostMailAddress.Equals(user.mailAddress) || participantRefs.Any(pr => pr.roomId ==r.id)).ToList();
-            
+            var rooms = _context.Room.Where(r =>
+                r.hostMailAddress.Equals(user.mailAddress) || participantRefs.Any(pr => pr.roomId == r.id)).ToList();
+
             rooms.ForEach(r =>
             {
                 var roomName = r.name;
@@ -125,8 +127,14 @@ namespace PlanningPoker2018_backend_2.Controllers
 
             var memberRefs = _context.TeamMember.Where(m => m.mailAddress == mailAddress);
             var userTeams =
-                _context.EstimationTeam.Where(t => t.creator == mailAddress || memberRefs.Any(r => r.teamId == t.id)).ToList();
-            userTeams.ForEach(t => { t.members = _context.TeamMember.Where(m => m.teamId == t.id).ToList(); });
+                _context.EstimationTeam.Where(t => t.creator == mailAddress || memberRefs.Any(r => r.teamId == t.id))
+                    .ToList();
+            userTeams.ForEach(t =>
+            {
+                t.members = _context.TeamMember.Where(m => m.teamId == t.id)
+                    .Select(s => s.mailAddress)
+                    .ToList();
+            });
             return Ok(userTeams);
         }
     }

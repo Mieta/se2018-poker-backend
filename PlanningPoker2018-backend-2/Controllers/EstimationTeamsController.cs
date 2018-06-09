@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlanningPoker2018_backend_2.Entities;
@@ -26,7 +24,12 @@ namespace PlanningPoker2018_backend_2.Controllers
         public IEnumerable<EstimationTeam> GetEstimationTeam()
         {
             var estimationTeams = _context.EstimationTeam.ToList();
-            estimationTeams.ForEach(t => { t.members = _context.TeamMember.Where(m => m.teamId == t.id).ToList(); });
+            estimationTeams.ForEach(t =>
+            {
+                t.members = _context.TeamMember.Where(m => m.teamId == t.id)
+                    .Select(s => s.mailAddress)
+                    .ToList();
+            });
             return estimationTeams;
         }
 
@@ -46,7 +49,9 @@ namespace PlanningPoker2018_backend_2.Controllers
                 return NotFound();
             }
 
-            estimationTeam.members = _context.TeamMember.Where(tm => tm.teamId == estimationTeam.id).ToList();
+            estimationTeam.members = _context.TeamMember.Where(tm => tm.teamId == estimationTeam.id)
+                .Select(s => s.mailAddress)
+                .ToList();
             return Ok(estimationTeam);
         }
 
