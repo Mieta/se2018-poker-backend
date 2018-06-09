@@ -114,5 +114,11 @@ namespace PlanningPoker2018_backend_2.Controllers
             });
             return Ok(summariesList);
         }
+
+        [HttpGet("{mailAddress}/teams")]
+        public IActionResult GetUserTeams([FromRoute] string mailAddress)
+        {
+            
+        }
     }
 }
