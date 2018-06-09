@@ -23,7 +23,7 @@ namespace PlanningPoker2018_backend.Tests
         }
         
         [Fact]
-        public async void Put_ShouldAddNewRoom()
+        public async void Put_ShouldAddNewUser()
         {
             ClearUsersFromDatabase();
             var controller = new UsersController(context);
