@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using PlanningPoker2018_backend_2.Entities;
@@ -82,6 +83,34 @@ namespace PlanningPoker2018_backend_2.Controllers
         private bool isUserExists(User user)
         {
             return _context.User.Any(u => u.mailAddress == user.mailAddress);
+        }
+
+        [HttpGet("{mailAddress}/summaries")]
+        public IActionResult GetGameSummaries([FromRoute] string mailAddress)
+        {
+            var summariesList = new List<GameSummary>();
+            if (!_context.User.Any(u => u.mailAddress == mailAddress))
+            {
+                return NotFound(new BasicResponse {message = "User not found"});
+            }
+            var user = _context.User.First(u => u.mailAddress == mailAddress);
+            var participantRefs = _context.RoomParticipant.Where(rp => rp.mailAddress.Equals(user.mailAddress));
+            var rooms = _context.Room.Where(r => r.hostMailAddress.Equals(user.mailAddress) || participantRefs.Any(pr => pr.roomId ==r.id)).ToList();
+            
+            rooms.ForEach(r =>
+            {
+                var roomName = r.name;
+                var roomDate = r.roomDate;
+                var roomTasks = _context.ProjectTask.Where(task => task.RoomId == r.id).ToArray();
+                summariesList.Add(new GameSummary()
+                {
+                    roomName = roomDate,
+                    date = roomDate,
+                    participants = participantRefs.Where(rp => rp.roomId.Equals(r.id)).ToArray(),
+                    tasks = roomTasks
+                });
+            });
+            return Ok(summariesList);
         }
     }
 }
