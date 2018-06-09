@@ -75,7 +75,7 @@ namespace PlanningPoker2018_backend_2
             };
             app.UseWebSockets(wsOptions);             
 
-            RoomServer.initialize(app, "/websocket");
+            RoomServer.Initialize(app, "/websocket");
         }
     }
 }

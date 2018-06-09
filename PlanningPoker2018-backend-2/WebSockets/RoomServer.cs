@@ -19,7 +19,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
 
         public static RoomServer Instance => _instance;
 
-        public static void initialize(IApplicationBuilder app, string Path)
+        public static void Initialize(IApplicationBuilder app, string Path)
         {
             _instance = new RoomServer(app, Path);
         }
@@ -27,7 +27,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
 
         private readonly ConcurrentDictionary<string, WebSocketRoom> _activeRooms =new ConcurrentDictionary<string, WebSocketRoom>();
 
-        public RoomServer(IApplicationBuilder app, string Location) : base(app, Location)
+        private RoomServer(IApplicationBuilder app, string location) : base(app, location)
         {
         }
 
@@ -36,17 +36,16 @@ namespace PlanningPoker2018_backend_2.WebSockets
             
         }
 
-        public async override void handleNewMessage(AppWebSocket socket, string message)
+        public override async void handleNewMessage(AppWebSocket socket, string message)
         {
             var parsedMessage = JsonConvert.DeserializeObject<WebSocketMessage>(message);
-            var messageType = parsedMessage.type;
             //WORKAROUND to fix problem with end of message
             var messageToSend = JsonConvert.SerializeObject(parsedMessage);
             if(_activeRooms.ContainsKey(parsedMessage.roomId))
             {
                 try
                 {
-                    await _activeRooms[parsedMessage.roomId].handleSendingMessage(socket, messageToSend);
+                    await _activeRooms[parsedMessage.roomId].HandleSendingMessage(socket, messageToSend);
                 } 
                 catch(WebSocketException ex)
                 {
@@ -59,7 +58,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
             }
         }
 
-        public async override Task handleNewSocket(AppWebSocket socket)
+        public override async Task handleNewSocket(AppWebSocket socket)
         {
             socket.OnMessageReceived += handleNewMessage;
             socket.OnOpen += Socket_OnOpen;
@@ -70,12 +69,12 @@ namespace PlanningPoker2018_backend_2.WebSockets
 
         private void Socket_OnClose(AppWebSocket sender, string roomId)
         {
-            _activeRooms[roomId].removeSocketFromRoom(sender);
+            _activeRooms[roomId].RemoveSocketFromRoom(sender);
         }
 
         private async void Socket_OnOpen(AppWebSocket sender, string roomId, bool isClientSocket)
         {
-            var socketsReadyMessage = new WebSocketMessage() { type = "sockets-ready", roomId = roomId };
+            var socketsReadyMessage = new WebSocketMessage() { type = "sockets-ready", roomId = roomId, socketId = sender.WebSocketId};
             var serializedMessage = JsonConvert.SerializeObject(socketsReadyMessage);
             if (!_activeRooms.ContainsKey(roomId))
             {
@@ -91,11 +90,11 @@ namespace PlanningPoker2018_backend_2.WebSockets
             }
             else if(isClientSocket)
             {
-                _activeRooms[roomId].addClientToRoom(sender);
+                await _activeRooms[roomId].AddClientToRoom(sender);
             }
             else
             {
-                _activeRooms[roomId].addHostToRoom(sender);
+                _activeRooms[roomId].AddHostToRoom(sender);
             }
             await sender.Send(serializedMessage);
         }

@@ -12,6 +12,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
     public class AppWebSocket
     {
         private WebSocket socket;
+        public string WebSocketId { get; private set; }
 
         public event MessageReceivedEventHandler OnMessageReceived;
         public event ConnectionOpenedEventHandler OnOpen;
@@ -25,6 +26,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
         public AppWebSocket(WebSocket webSocket)
         {
             socket = webSocket;
+            WebSocketId = System.Guid.NewGuid().ToString();
         }
 
         public async Task Initialize()
