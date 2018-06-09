@@ -50,7 +50,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.ProjectTask.Add(projectTask);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProjectTask", new {id = projectTask.id}, projectTask);
+            return CreatedAtAction("GetProjectTask", new {projectTask.id}, projectTask);
         }
 
         // Patch: api/tasks/{taskId}
@@ -69,13 +69,13 @@ namespace PlanningPoker2018_backend_2.Controllers
 
             return AcceptedAtAction("ChangeProjectTaskEstimate", new
             {
-                id = projectTask.id,
-                estimate = projectTask.estimate
+                projectTask.id,
+                projectTask.estimate
             });
         }
 
         [HttpPost("{id}/status/{statusName}")]
-        public async Task<IActionResult> UpdateTaskStatus([FromRoute] int id, [FromRoute] String statusName)
+        public async Task<IActionResult> UpdateTaskStatus([FromRoute] int id, [FromRoute] string statusName)
         {
             if (!ModelState.IsValid)
             {
@@ -89,10 +89,11 @@ namespace PlanningPoker2018_backend_2.Controllers
             }
             catch (StatusNotFoundException ex)
             {
-                return BadRequest(new BasicResponse() {message = "Wrong status provided"});
+                Console.WriteLine(ex.Message);
+                return BadRequest(new BasicResponse {message = "Wrong status provided"});
             }
 
-            var task = new ProjectTask() {id = id, status = newStatus.name};
+            var task = new ProjectTask {id = id, status = newStatus.name};
             _context.ProjectTask.Attach(task);
             _context.Entry(task).Property(t => t.status).IsModified = true;
             await _context.SaveChangesAsync();

@@ -27,7 +27,7 @@ namespace PlanningPoker2018_backend_2.Controllers
         }
 
         [HttpGet("{roomId}")]
-        public Room getRoom(int roomId)
+        public Room GetRoom(int roomId)
         {
             return _context.Room.First(r => r.id == roomId);
         }
@@ -50,9 +50,9 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.Room.Add(room);
             await _context.SaveChangesAsync();
 
-            room.link = "https://online-planning-poker.herokuapp.com/room/participant/" + room.id.ToString();
+            room.link = "https://online-planning-poker.herokuapp.com/room/participant/" + room.id;
 
-            return CreatedAtAction("GetRoom", new {id = room.id}, room);
+            return CreatedAtAction("GetRoom", new {room.id}, room);
         }
 
         // GET: api/rooms/{roomId}/summary
@@ -63,7 +63,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             var roomName = room.name;
             var roomTasks = _context.ProjectTask.Where(task => task.RoomId == roomId).ToArray();
             var currentDate = DateTime.Now;
-            var roomHost = room.hostMailAddress ?? room.hostUsername;  
+            var roomHost = room.hostMailAddress ?? room.hostUsername;
             room.roomDate = currentDate.ToString(new CultureInfo("pl-PL"));
             _context.Entry(room).Property(t => t.roomDate).IsModified = true;
             await _context.SaveChangesAsync();
@@ -79,31 +79,35 @@ namespace PlanningPoker2018_backend_2.Controllers
         }
 
         [HttpPost("{roomId}/po")]
-        public async Task<IActionResult> assignPOToRoom([FromRoute] int roomId, [FromBody] RoomAssignmentBody body)
+        public async Task<IActionResult> AssignPoToRoom([FromRoute] int roomId, [FromBody] RoomAssignmentBody body)
         {
             if (!_context.Room.Any(r => r.id == roomId))
             {
                 return NotFound(new BasicResponse {message = "Nie znaleziono pokoju o podanym id"});
             }
+
             var fetchedRoom = _context.Room.First(r => r.id == roomId);
             if (fetchedRoom.hostMailAddress != null)
             {
                 return BadRequest(new BasicResponse {message = "Host already assigned"});
             }
-            
-            if (body.mailAddress != null) 
+
+            if (body.mailAddress != null)
             {
                 if (_context.User.Any(u => u.mailAddress.Equals(body.mailAddress)))
                 {
                     fetchedRoom.hostMailAddress = body.mailAddress;
                     _context.Entry(fetchedRoom).Property(t => t.hostMailAddress).IsModified = true;
                     await _context.SaveChangesAsync();
-                    return NoContent();    
+                    return NoContent();
                 }
                 else
                 {
-                    return NotFound(new BasicResponse {message = "Nie znaleziono użytkownika o podanym adresie e-mail"});
-                }    
+                    return NotFound(new BasicResponse
+                    {
+                        message = "Nie znaleziono użytkownika o podanym adresie e-mail"
+                    });
+                }
             }
             else if (body.username != null)
             {
@@ -117,47 +121,46 @@ namespace PlanningPoker2018_backend_2.Controllers
             {
                 return BadRequest(new BasicResponse() {message = "Missing parameters"});
             }
-            
         }
 
         [HttpPost("{roomId}/participant")]
-        public async Task<IActionResult> assignParticipantToRoom([FromRoute] int roomId,
+        public async Task<IActionResult> AssignParticipantToRoom([FromRoute] int roomId,
             [FromBody] RoomAssignmentBody body)
         {
             if (!_context.Room.Any(r => r.id == roomId))
             {
                 return NotFound(new BasicResponse {message = "Nie znaleziono pokoju o podanym id"});
             }
+
             if (body.mailAddress != null)
             {
-                if (_context.User.Any(u => u.mailAddress.Equals(body.mailAddress)))
-                {
-                    var fetchedRoom = _context.Room.First(r => r.id == roomId);
-                    if (fetchedRoom.hostMailAddress != null)
+                if (!_context.User.Any(u => u.mailAddress.Equals(body.mailAddress)))
+                    return NotFound(new BasicResponse
                     {
-                        return BadRequest(new BasicResponse {message = "Host already assigned"});
-                    }
-                    var roomParticipant = new RoomParticipant() {mailAddress = body.mailAddress, roomId = roomId};
-                    _context.RoomParticipant.Add(roomParticipant);
-                    await _context.SaveChangesAsync();                    
-                    return NoContent();
-                }
-                else
+                        message = "Nie znaleziono użytkownika o podanym adresie e-mail"
+                    });
+                var fetchedRoom = _context.Room.First(r => r.id == roomId);
+                if (fetchedRoom.hostMailAddress != null)
                 {
-                    return NotFound(new BasicResponse {message = "Nie znaleziono użytkownika o podanym adresie e-mail"});
+                    return BadRequest(new BasicResponse {message = "Host already assigned"});
                 }
+
+                var roomParticipant = new RoomParticipant() {mailAddress = body.mailAddress, roomId = roomId};
+                _context.RoomParticipant.Add(roomParticipant);
+                await _context.SaveChangesAsync();
+                return NoContent();
+
             }
-            else if (body.username != null)
+
+            if (body.username != null)
             {
                 var roomParticipant = new RoomParticipant() {userName = body.username, roomId = roomId};
                 _context.RoomParticipant.Add(roomParticipant);
                 await _context.SaveChangesAsync();
                 return NoContent();
             }
-            else
-            {
-                return BadRequest(new BasicResponse() {message = "Missing parameters"});
-            }
+
+            return BadRequest(new BasicResponse() {message = "Missing parameters"});
         }
     }
 }
