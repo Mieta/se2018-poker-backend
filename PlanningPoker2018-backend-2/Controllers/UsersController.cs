@@ -108,7 +108,7 @@ namespace PlanningPoker2018_backend_2.Controllers
                     host = roomHost,
                     roomName = roomName,
                     date = roomDate,
-                    participants = participantRefs.Where(rp => rp.roomId.Equals(r.id)).ToArray(),
+                    participants = _context.RoomParticipant.Where(rp => rp.roomId.Equals(r.id)).ToArray(),
                     tasks = roomTasks
                 });
             });
