@@ -68,10 +68,11 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.Room.Attach(roomToUpdate);
             _context.Entry(roomToUpdate).Property(t => t.roomDate).IsModified = true;
             await _context.SaveChangesAsync();
+            var roomParticipants = _context.RoomParticipant.Where(rp => rp.roomId == roomId).ToArray();
             return new GameSummary()
             {
                 date = currentDate.ToString(new CultureInfo("pl-PL")),
-                participants = users,
+                participants = roomParticipants,
                 roomName = roomName,
                 tasks = roomTasks
             };
