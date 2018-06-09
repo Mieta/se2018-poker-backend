@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PlanningPoker2018_backend_2.Entities;
 using PlanningPoker2018_backend_2.Models;
 
 namespace PlanningPoker2018_backend_2.Controllers
@@ -21,43 +22,36 @@ namespace PlanningPoker2018_backend_2.Controllers
         }
 
         // GET: api/Users/{userId}
-        [HttpGet("userId")]
+        [HttpGet("{userId}")]
         public User GetUser(int userId)
         {
             return _context.User.First(u => u.id == userId);
         }
 
 
-        //POST: api/Users/join
-        [HttpPost]
-        public async Task<IActionResult> AddUser([FromBody] User user)
+        // PUT: api/Users
+        [HttpPut]
+        public async Task<IActionResult> PutNewUser([FromBody] User user)
         {
-            user.roleId = 2;
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.User.Add(user);
-                return CreatedAtAction("AddUser", user);
+                return BadRequest(ModelState);
             }
-            return BadRequest();
-        }
-        
-        //POST: api/Users/po/join
-        [HttpPost]
-        public async Task<IActionResult> AddProductOwnerUser([FromBody] User user)
-        {
-            user.roleId = 1;
-            if (ModelState.IsValid)
+            user.password = BCrypt.Net.BCrypt.HashPassword(user.password, 15);
+            if (isUserExists(user))
             {
-                _context.User.Add(user);
-                return CreatedAtAction("AddUser", user);
+                return BadRequest(new BasicResponse {message = "User already exists"});
             }
-            return BadRequest();
+            
+            _context.User.Add(user);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetUser", new {id = user.id}, new BasicResponse {message = "User created successfully"} );
         }
 
-
-        private bool RoomExists(int id)
+        private bool isUserExists(User user)
         {
-            return _context.Room.Any(e => e.id == id);
+            return _context.User.Any(u => u.mailAddress == user.mailAddress);
         }
     }
 }
