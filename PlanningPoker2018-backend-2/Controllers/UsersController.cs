@@ -118,7 +118,16 @@ namespace PlanningPoker2018_backend_2.Controllers
         [HttpGet("{mailAddress}/teams")]
         public IActionResult GetUserTeams([FromRoute] string mailAddress)
         {
-            
+            if (!_context.User.Any(u => u.mailAddress == mailAddress))
+            {
+                return NotFound(new BasicResponse() {message = "User with specified mail address not found"});
+            }
+
+            var memberRefs = _context.TeamMember.Where(m => m.mailAddress == mailAddress);
+            var userTeams =
+                _context.EstimationTeam.Where(t => t.creator == mailAddress || memberRefs.Any(r => r.teamId == t.id)).ToList();
+            userTeams.ForEach(t => { t.members = _context.TeamMember.Where(m => m.teamId == t.id).ToList(); });
+            return Ok(userTeams);
         }
     }
 }
