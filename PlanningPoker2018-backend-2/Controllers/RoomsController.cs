@@ -17,7 +17,7 @@ namespace PlanningPoker2018_backend_2.Controllers
     public class RoomsController : Controller
     {
         private readonly DatabaseContext _context;
-        private List<string> exportFormats = new List<string> {"csv"};
+        private readonly List<string> _exportFormats = new List<string> {"csv"};
 
         public RoomsController(DatabaseContext context)
         {
@@ -174,7 +174,7 @@ namespace PlanningPoker2018_backend_2.Controllers
                 return NotFound(new BasicResponse {message = "Room not found"});
             }
 
-            if (!exportFormats.Contains(format))
+            if (!_exportFormats.Contains(format))
             {
                 return BadRequest(new BasicResponse {message = "Unsupported format"});
             }
@@ -199,11 +199,9 @@ namespace PlanningPoker2018_backend_2.Controllers
             var streamWriter = new StreamWriter(stream);
             var csv = new CsvWriter(streamWriter);
             csv.Configuration.RegisterClassMap<CsvRowMap>();
-            Console.WriteLine(stream.Length);
             csv.WriteRecords(csvRows);
             streamWriter.Flush();
             stream.Seek(0, SeekOrigin.Begin);
-            Console.WriteLine(stream.Length);
             var sb = new StringBuilder();
             sb.Append(room.id)
                 .Append("-")
