@@ -130,14 +130,17 @@ namespace PlanningPoker2018_backend_2.Controllers
                 var lineObjects = line.Split(delimeter);
                 var task = new ProjectTask();
                 task.title = lineObjects[summaryIndex];
+                task.status = "Unestimated";
                 if (lineObjects[estimateIndex] != "")
                 {
                     task.estimate = int.Parse(lineObjects[estimateIndex]);
                 }
 
                 task.RoomId = roomId;
-                _context.ProjectTask.Add(new ProjectTask());
+                _context.ProjectTask.Add(task);
             }
+
+            _context.SaveChanges();
 
             return AcceptedAtAction("Parse CSV to tasks");
         }
