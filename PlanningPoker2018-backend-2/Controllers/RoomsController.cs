@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using CsvHelper;
 using Microsoft.AspNetCore.Mvc;
 using PlanningPoker2018_backend_2.Entities;
 using PlanningPoker2018_backend_2.Models;
@@ -14,6 +17,7 @@ namespace PlanningPoker2018_backend_2.Controllers
     public class RoomsController : Controller
     {
         private readonly DatabaseContext _context;
+        private List<string> exportFormats = new List<string> {"csv"};
 
         public RoomsController(DatabaseContext context)
         {
@@ -149,7 +153,6 @@ namespace PlanningPoker2018_backend_2.Controllers
                 _context.RoomParticipant.Add(roomParticipant);
                 await _context.SaveChangesAsync();
                 return NoContent();
-
             }
 
             if (body.username != null)
@@ -161,6 +164,53 @@ namespace PlanningPoker2018_backend_2.Controllers
             }
 
             return BadRequest(new BasicResponse() {message = "Missing parameters"});
+        }
+
+        [HttpGet("{roomId}/summary/export/{format}")]
+        public IActionResult GetExportedSummaryReport([FromRoute] int roomId, [FromRoute] string format = "csv")
+        {
+            if (!_context.Room.Any(r => r.id.Equals(roomId)))
+            {
+                return NotFound(new BasicResponse {message = "Room not found"});
+            }
+
+            if (!exportFormats.Contains(format))
+            {
+                return BadRequest(new BasicResponse {message = "Unsupported format"});
+            }
+
+            var room = _context.Room.First(r => r.id == roomId);
+            var tasks = _context.ProjectTask.Where(t => t.RoomId.Equals(roomId)).ToList();
+            if (tasks.Any(t => t.estimate == 0) || room.roomDate == null)
+            {
+                return BadRequest(new BasicResponse {message = "Estimation have not finished yet"});
+            }
+
+            var csvRows = new List<CsvRow>();
+            tasks.ForEach(t =>
+            {
+                csvRows.Add(new CsvRow()
+                {
+                    StoryPoints = t.estimate.ToString(),
+                    Summary = t.title
+                });
+            });
+            var stream = new MemoryStream();
+            var streamWriter = new StreamWriter(stream);
+            var csv = new CsvWriter(streamWriter);
+            csv.Configuration.RegisterClassMap<CsvRowMap>();
+            Console.WriteLine(stream.Length);
+            csv.WriteRecords(csvRows);
+            streamWriter.Flush();
+            stream.Seek(0, SeekOrigin.Begin);
+            Console.WriteLine(stream.Length);
+            var sb = new StringBuilder();
+            sb.Append(room.id)
+                .Append("-")
+                .Append(room.name)
+                .Append("-export.csv");
+            var response = File(stream, "text/csv", sb.ToString());
+            return response;
         }
     }
 }
