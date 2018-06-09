@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -7,23 +8,26 @@ namespace PlanningPoker2018_backend_2.WebSockets
 {
     public class WebSocketRoom
     {
-        private string id;
+        private readonly string _id;
         private AppWebSocket _hostWebSocket;
         private readonly List<AppWebSocket> _clientWebSockets;
 
+        public string HostId => _hostWebSocket.WebSocketId;
+
         public WebSocketRoom(string id, AppWebSocket host)
         {
-            this.id = id;
+            _id = id;
             _hostWebSocket = host;
             _clientWebSockets = new List<AppWebSocket>();
         }
 
         public async Task HandleSendingMessage(AppWebSocket sender, string message)
         {
-            if(sender == _hostWebSocket)
+            if (sender == _hostWebSocket)
             {
                 SendMessageToParticipants(message);
-            } else
+            }
+            else
             {
                 await SendMessageToHost(message);
             }
@@ -32,7 +36,8 @@ namespace PlanningPoker2018_backend_2.WebSockets
         public void AddHostToRoom(AppWebSocket webSocket)
         {
             _hostWebSocket = webSocket;
-            SendMessageToParticipants("{'message': 'Host connected to the room', 'type': 'warning'}");
+            SendMessageToParticipants(new BasicMessage {message = "Host connected to the room", type = "warning"}
+                .ToJsonString());
         }
 
         public async Task AddClientToRoom(AppWebSocket clientWebSocket)
@@ -41,7 +46,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
             var jObject = new JObject
             {
                 ["type"] = "new-client",
-                ["roomId"] = id,
+                ["roomId"] = _id,
                 ["clientId"] = clientWebSocket.WebSocketId
             };
             var serializedJson = JsonConvert.SerializeObject(jObject);
@@ -50,15 +55,22 @@ namespace PlanningPoker2018_backend_2.WebSockets
 
         public void RemoveSocketFromRoom(AppWebSocket socket)
         {
-            if(socket == _hostWebSocket)
+            if (socket == _hostWebSocket)
             {
                 _hostWebSocket = null;
-                SendMessageToParticipants("{'message': 'Host left the room', 'type': 'warning'}");
+                SendMessageToParticipants(new BasicMessage {message = "Host left the room", type = "warning"}
+                    .ToJsonString());
             }
             else
             {
                 _clientWebSockets.Remove(socket);
             }
+        }
+
+        public async Task SendMessageToParticipant(string participantId, string message)
+        {
+            var clientWebSocket = _clientWebSockets.First(ws => ws.WebSocketId == participantId);
+            await clientWebSocket.Send(message);
         }
 
         private void SendMessageToParticipants(string message)
@@ -70,12 +82,17 @@ namespace PlanningPoker2018_backend_2.WebSockets
         {
             if (_hostWebSocket == null)
             {
-                throw new WebSocketException("Host web socket was not initialized or it is closed");
-            } else
+                throw new WebSocketException(new BasicMessage
+                {
+                    message = "Host web socket was not initialized or it is closed",
+                    type =
+                        "error"
+                }.ToJsonString());
+            }
+            else
             {
                 await _hostWebSocket.Send(message);
             }
-            
         }
     }
 }

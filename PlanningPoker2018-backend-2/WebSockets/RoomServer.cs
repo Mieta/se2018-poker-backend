@@ -25,7 +25,8 @@ namespace PlanningPoker2018_backend_2.WebSockets
         }
 
 
-        private readonly ConcurrentDictionary<string, WebSocketRoom> _activeRooms =new ConcurrentDictionary<string, WebSocketRoom>();
+        private readonly ConcurrentDictionary<string, WebSocketRoom> _activeRooms =
+            new ConcurrentDictionary<string, WebSocketRoom>();
 
         private RoomServer(IApplicationBuilder app, string location) : base(app, location)
         {
@@ -33,7 +34,6 @@ namespace PlanningPoker2018_backend_2.WebSockets
 
         public override void handleSocketClose(AppWebSocket socket)
         {
-            
         }
 
         public override async void handleNewMessage(AppWebSocket socket, string message)
@@ -41,20 +41,28 @@ namespace PlanningPoker2018_backend_2.WebSockets
             var parsedMessage = JsonConvert.DeserializeObject<WebSocketMessage>(message);
             //WORKAROUND to fix problem with end of message
             var messageToSend = JsonConvert.SerializeObject(parsedMessage);
-            if(_activeRooms.ContainsKey(parsedMessage.roomId))
+            if (_activeRooms.ContainsKey(parsedMessage.roomId))
             {
-                try
+                var room = _activeRooms[parsedMessage.roomId];
+                if (parsedMessage.socketId != room.HostId)
                 {
-                    await _activeRooms[parsedMessage.roomId].HandleSendingMessage(socket, messageToSend);
-                } 
-                catch(WebSocketException ex)
+                    await room.SendMessageToParticipant(parsedMessage.socketId, message);
+                }
+                else
                 {
-                    await socket.Send("{'message': '" + ex.Message + "', 'type': 'error' }");
+                    try
+                    {
+                        await _activeRooms[parsedMessage.roomId].HandleSendingMessage(socket, messageToSend);
+                    }
+                    catch (WebSocketException ex)
+                    {
+                        await socket.Send(new BasicMessage {message = ex.Message, type = "error"}.ToJsonString());
+                    }
                 }
             }
             else
             {
-                await socket.Send("{'message': 'Room not found', 'type': 'error' }");
+                await socket.Send(new BasicMessage {message = "Room not found", type = "error"}.ToJsonString());
             }
         }
 
@@ -64,7 +72,6 @@ namespace PlanningPoker2018_backend_2.WebSockets
             socket.OnOpen += Socket_OnOpen;
             socket.OnClose += Socket_OnClose;
             await socket.Initialize();
-            
         }
 
         private void Socket_OnClose(AppWebSocket sender, string roomId)
@@ -74,13 +81,14 @@ namespace PlanningPoker2018_backend_2.WebSockets
 
         private async void Socket_OnOpen(AppWebSocket sender, string roomId, bool isClientSocket)
         {
-            var socketsReadyMessage = new WebSocketMessage() { type = "sockets-ready", roomId = roomId, socketId = sender.WebSocketId};
+            var socketsReadyMessage =
+                new WebSocketMessage() {type = "sockets-ready", roomId = roomId, socketId = sender.WebSocketId};
             var serializedMessage = JsonConvert.SerializeObject(socketsReadyMessage);
             if (!_activeRooms.ContainsKey(roomId))
             {
-                if(isClientSocket)
+                if (isClientSocket)
                 {
-                    await sender.Send("You have no access to the room");
+                    await sender.Send(new BasicMessage{ message = "You have no access to the room", type = "error"}.ToJsonString());
                     return;
                 }
                 else
@@ -88,7 +96,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
                     _activeRooms.TryAdd(roomId, new WebSocketRoom(roomId, sender));
                 }
             }
-            else if(isClientSocket)
+            else if (isClientSocket)
             {
                 await _activeRooms[roomId].AddClientToRoom(sender);
             }
@@ -96,6 +104,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
             {
                 _activeRooms[roomId].AddHostToRoom(sender);
             }
+
             await sender.Send(serializedMessage);
         }
     }
