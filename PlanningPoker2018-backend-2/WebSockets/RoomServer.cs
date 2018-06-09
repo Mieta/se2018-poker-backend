@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.WebSockets;
-using System.Threading;
+﻿using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PlanningPoker2018_backend_2.Entities;
-using PlanningPoker2018_backend_2.Fleck.Interfaces;
 
 namespace PlanningPoker2018_backend_2.WebSockets
 {
@@ -19,9 +13,9 @@ namespace PlanningPoker2018_backend_2.WebSockets
 
         public static RoomServer Instance => _instance;
 
-        public static void Initialize(IApplicationBuilder app, string Path)
+        public static void Initialize(IApplicationBuilder app, string path)
         {
-            _instance = new RoomServer(app, Path);
+            _instance = new RoomServer(app, path);
         }
 
 
@@ -44,9 +38,19 @@ namespace PlanningPoker2018_backend_2.WebSockets
             if (_activeRooms.ContainsKey(parsedMessage.roomId))
             {
                 var room = _activeRooms[parsedMessage.roomId];
-                if (parsedMessage.socketId != room.HostId)
+                if (parsedMessage.type == "discussion")
                 {
-                    await room.SendMessageToParticipant(parsedMessage.socketId, message);
+                    if (parsedMessage.content["estimates"] is JArray estimates)
+                    {
+                        foreach (var estimationData in estimates)
+                        {
+                            var estimationValue = estimationData["estimate"];
+                            var estimatorId = estimationData["socketId"];
+                            //TODO check max and min values
+                        }
+                    }
+
+                    await room.HandleSendingMessage(socket, message);
                 }
                 else
                 {
@@ -88,7 +92,8 @@ namespace PlanningPoker2018_backend_2.WebSockets
             {
                 if (isClientSocket)
                 {
-                    await sender.Send(new BasicMessage{ message = "You have no access to the room", type = "error"}.ToJsonString());
+                    await sender.Send(new BasicMessage {message = "You have no access to the room", type = "error"}
+                        .ToJsonString());
                     return;
                 }
                 else
