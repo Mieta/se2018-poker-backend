@@ -67,7 +67,7 @@ namespace PlanningPoker2018_backend_2.Controllers
                 return BadRequest(ModelState);
             }
 
-            user.password = BCrypt.Net.BCrypt.HashPassword(user.password, 11);
+            user.password = BCrypt.Net.BCrypt.HashPassword(user.password, 9);
             if (isUserExists(user))
             {
                 return BadRequest(new BasicResponse {message = "User already exists"});
@@ -102,8 +102,10 @@ namespace PlanningPoker2018_backend_2.Controllers
                 var roomName = r.name;
                 var roomDate = r.roomDate;
                 var roomTasks = _context.ProjectTask.Where(task => task.RoomId == r.id).ToArray();
+                var roomHost = r.hostMailAddress ?? r.hostUsername;
                 summariesList.Add(new GameSummary()
                 {
+                    host = roomHost,
                     roomName = roomName,
                     date = roomDate,
                     participants = participantRefs.Where(rp => rp.roomId.Equals(r.id)).ToArray(),

@@ -59,18 +59,18 @@ namespace PlanningPoker2018_backend_2.Controllers
         [HttpGet("{roomId}/summary")]
         public async Task<GameSummary> GetGameSummary(int roomId)
         {
-            var roomName = _context.Room.First(r => r.id == roomId).name;
-            var users = new User[1];
+            var room = _context.Room.First(r => r.id == roomId);
+            var roomName = room.name;
             var roomTasks = _context.ProjectTask.Where(task => task.RoomId == roomId).ToArray();
             var currentDate = DateTime.Now;
-
-            var roomToUpdate = new Room() {id = roomId, roomDate = currentDate.ToString(new CultureInfo("pl-PL"))};
-            _context.Room.Attach(roomToUpdate);
-            _context.Entry(roomToUpdate).Property(t => t.roomDate).IsModified = true;
+            var roomHost = room.hostMailAddress ?? room.hostUsername;  
+            room.roomDate = currentDate.ToString(new CultureInfo("pl-PL"));
+            _context.Entry(room).Property(t => t.roomDate).IsModified = true;
             await _context.SaveChangesAsync();
             var roomParticipants = _context.RoomParticipant.Where(rp => rp.roomId == roomId).ToArray();
             return new GameSummary()
             {
+                host = roomHost,
                 date = currentDate.ToString(new CultureInfo("pl-PL")),
                 participants = roomParticipants,
                 roomName = roomName,
@@ -132,8 +132,6 @@ namespace PlanningPoker2018_backend_2.Controllers
             {
                 if (_context.User.Any(u => u.mailAddress.Equals(body.mailAddress)))
                 {
-                    
-                    
                     var fetchedRoom = _context.Room.First(r => r.id == roomId);
                     if (fetchedRoom.hostMailAddress != null)
                     {
