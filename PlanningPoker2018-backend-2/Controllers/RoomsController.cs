@@ -26,10 +26,10 @@ namespace PlanningPoker2018_backend_2.Controllers
             return _context.Room.ToList();
         }
 
-        [HttpGet]
-        public Room getRoom(int id)
+        [HttpGet("{roomId}")]
+        public Room getRoom(int roomId)
         {
-            return _context.Room.First(r => r.id == id);
+            return _context.Room.First(r => r.id == roomId);
         }
 
         [HttpGet("{roomId}/tasks")]
@@ -90,13 +90,13 @@ namespace PlanningPoker2018_backend_2.Controllers
             {
                 return BadRequest(new BasicResponse {message = "Host already assigned"});
             }
+            
             if (body.mailAddress != null) 
             {
                 if (_context.User.Any(u => u.mailAddress.Equals(body.mailAddress)))
                 {
-                    var roomToUpdate = new Room() {id = roomId, hostMailAddress = body.mailAddress};
-                    _context.Room.Attach(roomToUpdate);
-                    _context.Entry(roomToUpdate).Property(t => t.hostMailAddress).IsModified = true;
+                    fetchedRoom.hostMailAddress = body.mailAddress;
+                    _context.Entry(fetchedRoom).Property(t => t.hostMailAddress).IsModified = true;
                     await _context.SaveChangesAsync();
                     return NoContent();    
                 }

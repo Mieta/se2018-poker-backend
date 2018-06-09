@@ -104,7 +104,7 @@ namespace PlanningPoker2018_backend_2.Controllers
                 var roomTasks = _context.ProjectTask.Where(task => task.RoomId == r.id).ToArray();
                 summariesList.Add(new GameSummary()
                 {
-                    roomName = roomDate,
+                    roomName = roomName,
                     date = roomDate,
                     participants = participantRefs.Where(rp => rp.roomId.Equals(r.id)).ToArray(),
                     tasks = roomTasks
