@@ -43,7 +43,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
                 var room = _activeRooms[parsedMessage.roomId];
                 if (parsedMessage.type == "discussion")
                 {
-                    await room.HandleSendingMessage(socket, message);
+                    await room.HandleSendingMessage(socket, messageToSend);
                     if (!(parsedMessage.content["estimates"] is JArray estimates) || estimates.Count <= 1) return;
                     var estimatesList = estimates.ToObject<List<WsEstimate>>()
                         .OrderBy(e => e.estimate)
@@ -72,8 +72,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
                             var errorString = "Error sending message to " + e.socketId + "; Socket not found." +
                                               ex.Message;
                             var errorMessage = new BasicMessage() {message = errorString, type = "error"};
-                            var serializedMessage = JsonConvert.SerializeObject(errorMessage);
-                            await socket.Send(serializedMessage);
+                            await socket.Send(errorMessage.ToJsonString());
                         }
                     });
                     if (minEstimate.estimate != maxEstimate.estimate)
@@ -90,8 +89,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
                                     var errorString = "Error sending message to " + e.socketId + "; Socket not found." +
                                                       ex.Message;
                                     var errorMessage = new BasicMessage() {message = errorString, type = "error"};
-                                    var serializedMessage = JsonConvert.SerializeObject(errorMessage);
-                                    await socket.Send(serializedMessage);
+                                    await socket.Send(errorMessage.ToJsonString());
                                 }
                             }
                         );
