@@ -142,7 +142,7 @@ namespace PlanningPoker2018_backend_2.Controllers
 
             _context.SaveChanges();
 
-            return AcceptedAtAction("Parse CSV to tasks");
+            return AcceptedAtAction("Parsed CSV to tasks", tasks);
         }
     }
 }
