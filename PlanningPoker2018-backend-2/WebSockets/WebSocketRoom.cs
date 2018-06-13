@@ -78,6 +78,21 @@ namespace PlanningPoker2018_backend_2.WebSockets
             _clientWebSockets.ForEach(async s => await s.Send(message));
         }
 
+        public async Task SendMessageToOthers(string senderId, string message)
+        {
+            if (senderId == _hostWebSocket.WebSocketId)
+            {
+                SendMessageToParticipants(message);
+            }
+            else
+            {
+                await _hostWebSocket.Send(message);
+                _clientWebSockets.Where(ws => ws.WebSocketId != senderId)
+                    .ToList()
+                    .ForEach(async ws => await ws.Send(message));
+            }
+        }
+
         private async Task SendMessageToHost(string message)
         {
             if (_hostWebSocket == null)

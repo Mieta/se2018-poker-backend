@@ -95,6 +95,10 @@ namespace PlanningPoker2018_backend_2.WebSockets
                         );
                     }
                 }
+                else if (parsedMessage.type == "chat")
+                {
+                    await room.SendMessageToOthers(socket.WebSocketId, messageToSend);
+                }
                 else
                 {
                     try
