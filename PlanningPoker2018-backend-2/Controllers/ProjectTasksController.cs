@@ -105,7 +105,7 @@ namespace PlanningPoker2018_backend_2.Controllers
         }
 
         [HttpPost("{roomId}/parse")]
-        public async Task<IActionResult> ParseCSVToTasks([FromRoute] int roomId, [FromQuery] string delimeter,
+        public async Task<IActionResult> ParseCSVToTasks([FromRoute] int roomId, [FromQuery] string delimiter,
             IFormFile httpFile)
         {
             if (_context.Room.Find(roomId) == null)
@@ -117,7 +117,7 @@ namespace PlanningPoker2018_backend_2.Controllers
 
             var reader = new StreamReader(fileStream, true);
             var line2 = reader.ReadLine();
-            var header = line2.Split(delimeter);
+            var header = line2.Split(delimiter);
 
             var summaryIndex = System.Array.IndexOf(header, "Summary");
             var estimateIndex = System.Array.IndexOf(header, "Original Estimate");
@@ -127,7 +127,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             string line;
             while ((line = reader.ReadLine()) != null)
             {
-                var lineObjects = line.Split(delimeter);
+                var lineObjects = line.Split(delimiter);
                 var task = new ProjectTask();
                 task.title = lineObjects[summaryIndex];
                 task.status = "Unestimated";
@@ -137,6 +137,7 @@ namespace PlanningPoker2018_backend_2.Controllers
                 }
 
                 task.RoomId = roomId;
+                tasks.Add(task);
                 _context.ProjectTask.Add(task);
             }
 
