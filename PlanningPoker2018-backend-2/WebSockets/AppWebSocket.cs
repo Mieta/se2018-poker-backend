@@ -31,7 +31,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
 
         public async Task Initialize()
         {
-            var buffer = new byte[1024 * 4];
+            var buffer = new byte[1024 * 8];
             WebSocketReceiveResult wsresult = await socket.ReceiveAsync(new ArraySegment<byte>(buffer),
             CancellationToken.None);
             var initialMessage = System.Text.Encoding.Default.GetString(buffer);
