@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlanningPoker2018_backend_2.Entities;
 using PlanningPoker2018_backend_2.Models;
-using SQLitePCL;
 using TaskStatus = PlanningPoker2018_backend_2.Entities.TaskStatus;
-using SO = System.IO.File;
 
 namespace PlanningPoker2018_backend_2.Controllers
 {
@@ -102,48 +98,6 @@ namespace PlanningPoker2018_backend_2.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        [HttpPost("{roomId}/parse")]
-        public async Task<IActionResult> ParseCSVToTasks([FromRoute] int roomId, [FromQuery] string delimiter,
-            IFormFile httpFile)
-        {
-            if (_context.Room.Find(roomId) == null)
-            {
-                return NotFound(new BasicResponse() {message = "No room with id " + roomId + " found"});
-            }
-
-            Stream fileStream = httpFile.OpenReadStream();
-
-            var reader = new StreamReader(fileStream, true);
-            var line2 = reader.ReadLine();
-            var header = line2.Split(delimiter);
-
-            var summaryIndex = System.Array.IndexOf(header, "Summary");
-            var estimateIndex = System.Array.IndexOf(header, "Custom field (Story Points)");
-
-            var tasks = new List<ProjectTask>();
-
-            string line;
-            while ((line = reader.ReadLine()) != null)
-            {
-                var lineObjects = line.Split(delimiter);
-                var task = new ProjectTask();
-                task.title = lineObjects[summaryIndex];
-                task.status = "Unestimated";
-                if (lineObjects[estimateIndex] != "")
-                {
-                    task.estimate = int.Parse(lineObjects[estimateIndex]);
-                }
-
-                task.RoomId = roomId;
-                tasks.Add(task);
-                _context.ProjectTask.Add(task);
-            }
-
-            _context.SaveChanges();
-
-            return AcceptedAtAction("Parsed CSV to tasks", tasks);
         }
     }
 }
