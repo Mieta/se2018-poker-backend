@@ -71,7 +71,7 @@ namespace PlanningPoker2018_backend_2
             var wsOptions = new WebSocketOptions()
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(240),
-                ReceiveBufferSize = 8 * 1024
+                ReceiveBufferSize = 16 * 1024
             };
             app.UseWebSockets(wsOptions);             
 
