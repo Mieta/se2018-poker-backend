@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -61,13 +62,38 @@ namespace PlanningPoker2018_backend_2.WebSockets
 
                     var minEstimates = estimatesList.Where(e => e.estimate == minEstimate.estimate).ToList();
                     minEstimates.ForEach(async e =>
-                        await room.SendMessageToParticipant(e.socketId, serializedDisussionMessage)
-                    );
+                    {
+                        try
+                        {
+                            await room.SendMessageToParticipant(e.socketId, serializedDisussionMessage);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            var errorString = "Error sending message to " + e.socketId + "; Socket not found." +
+                                              ex.Message;
+                            var errorMessage = new BasicMessage() {message = errorString, type = "error"};
+                            var serializedMessage = JsonConvert.SerializeObject(errorMessage);
+                            await socket.Send(serializedMessage);
+                        }
+                    });
                     if (minEstimate.estimate != maxEstimate.estimate)
                     {
                         var maxEstimates = estimatesList.Where(e => e.estimate == maxEstimate.estimate).ToList();
                         maxEstimates.ForEach(async e =>
-                            await room.SendMessageToParticipant(e.socketId, serializedDisussionMessage)
+                            {
+                                try
+                                {
+                                    await room.SendMessageToParticipant(e.socketId, serializedDisussionMessage);
+                                }
+                                catch (InvalidOperationException ex)
+                                {
+                                    var errorString = "Error sending message to " + e.socketId + "; Socket not found." +
+                                                      ex.Message;
+                                    var errorMessage = new BasicMessage() {message = errorString, type = "error"};
+                                    var serializedMessage = JsonConvert.SerializeObject(errorMessage);
+                                    await socket.Send(serializedMessage);
+                                }
+                            }
                         );
                     }
                 }
