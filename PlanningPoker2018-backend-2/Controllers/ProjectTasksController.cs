@@ -120,7 +120,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             var header = line2.Split(delimiter);
 
             var summaryIndex = System.Array.IndexOf(header, "Summary");
-            var estimateIndex = System.Array.IndexOf(header, "Original Estimate");
+            var estimateIndex = System.Array.IndexOf(header, "Custom field (Story Points)");
 
             var tasks = new List<ProjectTask>();
 
