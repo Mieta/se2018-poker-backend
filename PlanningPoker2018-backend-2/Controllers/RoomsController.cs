@@ -98,33 +98,28 @@ namespace PlanningPoker2018_backend_2.Controllers
 
             if (body.mailAddress != null)
             {
-                if (_context.User.Any(u => u.mailAddress.Equals(body.mailAddress)))
-                {
-                    fetchedRoom.hostMailAddress = body.mailAddress;
-                    _context.Entry(fetchedRoom).Property(t => t.hostMailAddress).IsModified = true;
-                    await _context.SaveChangesAsync();
-                    return NoContent();
-                }
-                else
+                if (!_context.User.Any(u => u.mailAddress.Equals(body.mailAddress)))
                 {
                     return NotFound(new BasicResponse
                     {
                         message = "Nie znaleziono użytkownika o podanym adresie e-mail"
                     });
                 }
+                fetchedRoom.hostMailAddress = body.mailAddress;
+                _context.Entry(fetchedRoom).Property(t => t.hostMailAddress).IsModified = true;
+                await _context.SaveChangesAsync();
+                return NoContent();
+
             }
-            else if (body.username != null)
+            if (body.username != null)
             {
-                var roomToUpdate = new Room() {id = roomId, hostUsername = body.username};
-                _context.Room.Attach(roomToUpdate);
-                _context.Entry(roomToUpdate).Property(t => t.hostUsername).IsModified = true;
+                fetchedRoom.hostUsername = body.username;
+                _context.Room.Attach(fetchedRoom);
+                _context.Entry(fetchedRoom).Property(t => t.hostUsername).IsModified = true;
                 await _context.SaveChangesAsync();
                 return NoContent();
             }
-            else
-            {
-                return BadRequest(new BasicResponse() {message = "Missing parameters"});
-            }
+            return BadRequest(new BasicResponse() {message = "Missing parameters"});
         }
 
         [HttpPost("{roomId}/participant")]
