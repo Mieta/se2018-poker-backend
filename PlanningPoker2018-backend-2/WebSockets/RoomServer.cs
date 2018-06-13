@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
@@ -40,17 +42,34 @@ namespace PlanningPoker2018_backend_2.WebSockets
                 var room = _activeRooms[parsedMessage.roomId];
                 if (parsedMessage.type == "discussion")
                 {
-                    if (parsedMessage.content["estimates"] is JArray estimates)
-                    {
-                        foreach (var estimationData in estimates)
-                        {
-                            var estimationValue = estimationData["estimate"];
-                            var estimatorId = estimationData["socketId"];
-                            //TODO check max and min values
-                        }
-                    }
-
                     await room.HandleSendingMessage(socket, message);
+                    if (!(parsedMessage.content["estimates"] is JArray estimates) || estimates.Count <= 1) return;
+                    var estimatesList = estimates.ToObject<List<WsEstimate>>()
+                        .OrderBy(e => e.estimate)
+                        .ToList();
+                    var minEstimate = estimatesList.First();
+                    var maxEstimate = estimatesList.Last();
+
+                    var startDiscussionMessage =
+                        new WebSocketMessage()
+                        {
+                            roomId = parsedMessage.roomId,
+                            type = "start-discussion",
+                            socketId = parsedMessage.socketId
+                        };
+                    var serializedDisussionMessage = JsonConvert.SerializeObject(startDiscussionMessage);
+
+                    var minEstimates = estimatesList.Where(e => e.estimate == minEstimate.estimate).ToList();
+                    minEstimates.ForEach(async e =>
+                        await room.SendMessageToParticipant(e.socketId, serializedDisussionMessage)
+                    );
+                    if (minEstimate.estimate != maxEstimate.estimate)
+                    {
+                        var maxEstimates = estimatesList.Where(e => e.estimate == maxEstimate.estimate).ToList();
+                        maxEstimates.ForEach(async e =>
+                            await room.SendMessageToParticipant(e.socketId, serializedDisussionMessage)
+                        );
+                    }
                 }
                 else
                 {
