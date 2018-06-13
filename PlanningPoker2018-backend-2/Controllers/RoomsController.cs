@@ -181,7 +181,7 @@ namespace PlanningPoker2018_backend_2.Controllers
 
             var room = _context.Room.First(r => r.id == roomId);
             var tasks = _context.ProjectTask.Where(t => t.RoomId.Equals(roomId)).ToList();
-            if (tasks.Any(t => t.estimate == 0) || room.roomDate == null)
+            if (room.roomDate == null)
             {
                 return BadRequest(new BasicResponse {message = "Estimation have not finished yet"});
             }
