@@ -61,7 +61,7 @@ namespace PlanningPoker2018_backend_2.Controllers
         public GameSummary GetGameSummary(int roomId)
         {
             var roomName = _context.Room.First(r => r.id == roomId).name;
-            var users = _context.User.Where(u => u.roomId == roomId).ToArray();
+            var users = new User[1];
             var roomTasks = _context.ProjectTask.Where(task => task.RoomId == roomId).ToArray();
             var currentDate = DateTime.Now;
 
