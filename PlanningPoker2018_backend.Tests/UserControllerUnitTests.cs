@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlanningPoker2018_backend_2.Controllers;
+using PlanningPoker2018_backend_2.Entities;
 using PlanningPoker2018_backend_2.Models;
 using Xunit;
 
@@ -35,6 +36,27 @@ namespace PlanningPoker2018_backend.Tests
             Assert.Contains(context.User, p => p.username.Equals("John Doe") && p.id.Equals(1) && p.mailAddress.Equals("john.doe@gmail.com"));
         }
 
+        [Fact]
+        public async void Post_ShouldAuthenticateUser()
+        {
+            ClearUsersFromDatabase();
+            var controller = new UsersController(context);
+            var user = new User { id = 1, username = "John Doe", mailAddress = "john.doe@gmail.com", password = "password123"};
+            context.User.Add(user);
+            context.SaveChanges();
+
+            var result =
+                controller.AuthenticateUser(new AuthBody()
+                {
+                    mailAddress = "john.doe@gmail.com",
+                    password = "password123"
+                });
+            
+            var typeResult = Assert.IsType<OkObjectResult>(result);
+            Assert.NotNull(typeResult.StatusCode);
+            Assert.Equal(200, typeResult.StatusCode.Value);
+        }
+        
         private void ClearUsersFromDatabase()
         {
             foreach (var user in context.User)
