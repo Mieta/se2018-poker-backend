@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlanningPoker2018_backend_2.Models;
@@ -93,7 +91,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.TeamMember.Add(teamMember);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTeamMember", new { id = teamMember.id }, teamMember);
+            return CreatedAtAction("GetTeamMember", new {teamMember.id }, teamMember);
         }
 
         // DELETE: api/TeamMembers/5

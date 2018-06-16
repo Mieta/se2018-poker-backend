@@ -68,7 +68,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             }
 
             user.password = BCrypt.Net.BCrypt.HashPassword(user.password, 9);
-            if (isUserExists(user))
+            if (IsUserExists(user))
             {
                 return BadRequest(new BasicResponse {message = "User already exists"});
             }
@@ -76,11 +76,11 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.User.Add(user);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new {id = user.id},
+            return CreatedAtAction("GetUser", new {user.id},
                 new BasicResponse {message = "User created successfully"});
         }
 
-        private bool isUserExists(User user)
+        private bool IsUserExists(User user)
         {
             return _context.User.Any(u => u.mailAddress == user.mailAddress);
         }

@@ -67,7 +67,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.EstimationTeam.Add(estimationTeam);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetEstimationTeam", new {id = estimationTeam.id}, estimationTeam);
+            return CreatedAtAction("GetEstimationTeam", new {estimationTeam.id}, estimationTeam);
         }
 
         [HttpPost("{teamId}")]

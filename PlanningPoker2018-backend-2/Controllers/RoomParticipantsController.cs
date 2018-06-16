@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlanningPoker2018_backend_2.Models;
@@ -93,7 +91,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.RoomParticipant.Add(roomParticipant);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetRoomParticipant", new { id = roomParticipant.id }, roomParticipant);
+            return CreatedAtAction("GetRoomParticipant", new {roomParticipant.id }, roomParticipant);
         }
 
         // DELETE: api/RoomParticipants/5
