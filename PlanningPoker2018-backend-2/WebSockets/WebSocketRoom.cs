@@ -1,73 +1,113 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PlanningPoker2018_backend_2.WebSockets
 {
     public class WebSocketRoom
     {
-        private string id;
-        private AppWebSocket hostWebSocket;
-        private List<AppWebSocket> clientWebSockets;
+        private readonly string _id;
+        private AppWebSocket _hostWebSocket;
+        private readonly List<AppWebSocket> _clientWebSockets;
+
+        public string HostId => _hostWebSocket.WebSocketId;
 
         public WebSocketRoom(string id, AppWebSocket host)
         {
-            this.id = id;
-            this.hostWebSocket = host;
-            clientWebSockets = new List<AppWebSocket>();
+            _id = id;
+            _hostWebSocket = host;
+            _clientWebSockets = new List<AppWebSocket>();
         }
 
-        public async Task handleSendingMessage(AppWebSocket sender, string message)
+        public async Task HandleSendingMessage(AppWebSocket sender, string message)
         {
-            if(sender == hostWebSocket)
+            if (sender == _hostWebSocket)
             {
-                sendMessageToParticipants(message);
-            } else
-            {
-                await sendMessageToHost(message);
-            }
-        }
-
-        public void addHostToRoom(AppWebSocket hostWebSocket)
-        {
-            this.hostWebSocket = hostWebSocket;
-            sendMessageToParticipants("{'message': 'Host connected to the room', 'type': 'warning'}");
-        }
-
-        public void addClientToRoom(AppWebSocket clientWebSocket)
-        {
-            clientWebSockets.Add(clientWebSocket);
-        }
-
-        public void removeSocketFromRoom(AppWebSocket socket)
-        {
-            if(socket == hostWebSocket)
-            {
-                hostWebSocket = null;
-                sendMessageToParticipants("{'message': 'Host left the room', 'type': 'warning'}");
+                SendMessageToParticipants(message);
             }
             else
             {
-                clientWebSockets.Remove(socket);
+                await SendMessageToHost(message);
             }
         }
 
-        public void sendMessageToParticipants(string message)
+        public void AddHostToRoom(AppWebSocket webSocket)
         {
-            clientWebSockets.ForEach(async s => await s.Send(message));
+            _hostWebSocket = webSocket;
+            SendMessageToParticipants(new BasicMessage {message = "Host connected to the room", type = "warning"}
+                .ToJsonString());
         }
 
-        public async Task sendMessageToHost(string message)
+        public async Task AddClientToRoom(AppWebSocket clientWebSocket)
         {
-            if (hostWebSocket == null)
+            _clientWebSockets.Add(clientWebSocket);
+            var jObject = new JObject
             {
-                throw new WebSocketException("Host web socket was not initialized or it is closed");
-            } else
+                ["type"] = "new-client",
+                ["roomId"] = _id,
+                ["clientId"] = clientWebSocket.WebSocketId
+            };
+            var serializedJson = JsonConvert.SerializeObject(jObject);
+            await SendMessageToHost(serializedJson);
+        }
+
+        public void RemoveSocketFromRoom(AppWebSocket socket)
+        {
+            if (socket == _hostWebSocket)
             {
-                await hostWebSocket.Send(message);
+                _hostWebSocket = null;
+                SendMessageToParticipants(new BasicMessage {message = "Host left the room", type = "warning"}
+                    .ToJsonString());
             }
-            
+            else
+            {
+                _clientWebSockets.Remove(socket);
+            }
+        }
+
+        public async Task SendMessageToParticipant(string participantId, string message)
+        {
+            var clientWebSocket = _clientWebSockets.First(ws => ws.WebSocketId == participantId);
+            await clientWebSocket.Send(message);
+        }
+
+        private void SendMessageToParticipants(string message)
+        {
+            _clientWebSockets.ForEach(async s => await s.Send(message));
+        }
+
+        public async Task SendMessageToOthers(string senderId, string message)
+        {
+            if (senderId == _hostWebSocket.WebSocketId)
+            {
+                SendMessageToParticipants(message);
+            }
+            else
+            {
+                await _hostWebSocket.Send(message);
+                _clientWebSockets.Where(ws => ws.WebSocketId != senderId)
+                    .ToList()
+                    .ForEach(async ws => await ws.Send(message));
+            }
+        }
+
+        private async Task SendMessageToHost(string message)
+        {
+            if (_hostWebSocket == null)
+            {
+                throw new WebSocketException(new BasicMessage
+                {
+                    message = "Host web socket was not initialized or it is closed",
+                    type =
+                        "error"
+                }.ToJsonString());
+            }
+            else
+            {
+                await _hostWebSocket.Send(message);
+            }
         }
     }
 }

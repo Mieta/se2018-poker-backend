@@ -27,5 +27,11 @@ namespace PlanningPoker2018_backend_2.Models
         public DbSet<PlanningPoker2018_backend_2.Models.UserRole> UserRole { get; set; }
 
         public DbSet<PlanningPoker2018_backend_2.Models.ProjectTask> ProjectTask { get; set; }
+
+        public DbSet<PlanningPoker2018_backend_2.Models.RoomParticipant> RoomParticipant { get; set; }
+
+        public DbSet<PlanningPoker2018_backend_2.Models.EstimationTeam> EstimationTeam { get; set; }
+
+        public DbSet<PlanningPoker2018_backend_2.Models.TeamMember> TeamMember { get; set; }
     }
 }
