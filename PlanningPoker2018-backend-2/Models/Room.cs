@@ -12,6 +12,9 @@ namespace PlanningPoker2018_backend_2.Models
     {
         [Key]
         public int id { get; set; }
+        public string hostMailAddress { get; set; }
+        public string hostUsername { get; set; }
+        public string roomDate { get; set; }
         [Required]
         public string name { get; set; }
         [NotMapped]

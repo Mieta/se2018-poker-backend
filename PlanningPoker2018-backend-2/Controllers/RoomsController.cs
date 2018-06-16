@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using PlanningPoker2018_backend_2.Entities;
 using PlanningPoker2018_backend_2.Models;
 
 namespace PlanningPoker2018_backend_2.Controllers
@@ -27,10 +26,10 @@ namespace PlanningPoker2018_backend_2.Controllers
             return _context.Room.ToList();
         }
 
-        [HttpGet]
-        public Room getRoom(int id)
+        [HttpGet("{roomId}")]
+        public Room getRoom(int roomId)
         {
-            return _context.Room.First(r => r.id == id);
+            return _context.Room.First(r => r.id == roomId);
         }
 
         [HttpGet("{roomId}/tasks")]
@@ -58,21 +57,107 @@ namespace PlanningPoker2018_backend_2.Controllers
 
         // GET: api/rooms/{roomId}/summary
         [HttpGet("{roomId}/summary")]
-        public GameSummary GetGameSummary(int roomId)
+        public async Task<GameSummary> GetGameSummary(int roomId)
         {
-            var roomName = _context.Room.First(r => r.id == roomId).name;
-            var users = new User[1];
+            var room = _context.Room.First(r => r.id == roomId);
+            var roomName = room.name;
             var roomTasks = _context.ProjectTask.Where(task => task.RoomId == roomId).ToArray();
             var currentDate = DateTime.Now;
-
+            var roomHost = room.hostMailAddress ?? room.hostUsername;  
+            room.roomDate = currentDate.ToString(new CultureInfo("pl-PL"));
+            _context.Entry(room).Property(t => t.roomDate).IsModified = true;
+            await _context.SaveChangesAsync();
+            var roomParticipants = _context.RoomParticipant.Where(rp => rp.roomId == roomId).ToArray();
             return new GameSummary()
             {
+                host = roomHost,
                 date = currentDate.ToString(new CultureInfo("pl-PL")),
-                participants = users,
+                participants = roomParticipants,
                 roomName = roomName,
                 tasks = roomTasks
             };
         }
-        
+
+        [HttpPost("{roomId}/po")]
+        public async Task<IActionResult> assignPOToRoom([FromRoute] int roomId, [FromBody] RoomAssignmentBody body)
+        {
+            if (!_context.Room.Any(r => r.id == roomId))
+            {
+                return NotFound(new BasicResponse {message = "Nie znaleziono pokoju o podanym id"});
+            }
+            var fetchedRoom = _context.Room.First(r => r.id == roomId);
+            if (fetchedRoom.hostMailAddress != null)
+            {
+                return BadRequest(new BasicResponse {message = "Host already assigned"});
+            }
+            
+            if (body.mailAddress != null) 
+            {
+                if (_context.User.Any(u => u.mailAddress.Equals(body.mailAddress)))
+                {
+                    fetchedRoom.hostMailAddress = body.mailAddress;
+                    _context.Entry(fetchedRoom).Property(t => t.hostMailAddress).IsModified = true;
+                    await _context.SaveChangesAsync();
+                    return NoContent();    
+                }
+                else
+                {
+                    return NotFound(new BasicResponse {message = "Nie znaleziono użytkownika o podanym adresie e-mail"});
+                }    
+            }
+            else if (body.username != null)
+            {
+                var roomToUpdate = new Room() {id = roomId, hostUsername = body.username};
+                _context.Room.Attach(roomToUpdate);
+                _context.Entry(roomToUpdate).Property(t => t.hostUsername).IsModified = true;
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            else
+            {
+                return BadRequest(new BasicResponse() {message = "Missing parameters"});
+            }
+            
+        }
+
+        [HttpPost("{roomId}/participant")]
+        public async Task<IActionResult> assignParticipantToRoom([FromRoute] int roomId,
+            [FromBody] RoomAssignmentBody body)
+        {
+            if (!_context.Room.Any(r => r.id == roomId))
+            {
+                return NotFound(new BasicResponse {message = "Nie znaleziono pokoju o podanym id"});
+            }
+            if (body.mailAddress != null)
+            {
+                if (_context.User.Any(u => u.mailAddress.Equals(body.mailAddress)))
+                {
+                    var fetchedRoom = _context.Room.First(r => r.id == roomId);
+                    if (fetchedRoom.hostMailAddress != null)
+                    {
+                        return BadRequest(new BasicResponse {message = "Host already assigned"});
+                    }
+                    var roomParticipant = new RoomParticipant() {mailAddress = body.mailAddress, roomId = roomId};
+                    _context.RoomParticipant.Add(roomParticipant);
+                    await _context.SaveChangesAsync();                    
+                    return NoContent();
+                }
+                else
+                {
+                    return NotFound(new BasicResponse {message = "Nie znaleziono użytkownika o podanym adresie e-mail"});
+                }
+            }
+            else if (body.username != null)
+            {
+                var roomParticipant = new RoomParticipant() {userName = body.username, roomId = roomId};
+                _context.RoomParticipant.Add(roomParticipant);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            else
+            {
+                return BadRequest(new BasicResponse() {message = "Missing parameters"});
+            }
+        }
     }
 }
