@@ -2,6 +2,7 @@
 using PlanningPoker2018_backend_2.Controllers;
 using PlanningPoker2018_backend_2.Entities;
 using PlanningPoker2018_backend_2.Models;
+using System.Linq;
 using Xbehave;
 using Xunit;
 
@@ -33,6 +34,7 @@ namespace PlanningPoker2018_backend.Tests
                 {
                     _context.ProjectTask.Add(task);
                     _context.SaveChanges();
+                    _context.Entry(task).State = EntityState.Detached;
                 });
 
             "When I select task"
@@ -42,7 +44,10 @@ namespace PlanningPoker2018_backend.Tests
                 });
 
             "Then task status is 'Voting'"
-                .x(() => Assert.Equal(task.status, TaskStatus.VOTING.name));
+                .x(() => {
+                    task = _context.ProjectTask.First(pt => pt.id == task.id);
+                    Assert.Equal(TaskStatus.VOTING.name, task.status);
+                });
         }
 
         private void SetUpTest()
