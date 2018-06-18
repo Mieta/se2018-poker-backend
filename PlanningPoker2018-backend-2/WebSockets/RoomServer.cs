@@ -2,14 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.WebSockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PlanningPoker2018_backend_2.Entities;
-using PlanningPoker2018_backend_2.Fleck.Interfaces;
 
 namespace PlanningPoker2018_backend_2.WebSockets
 {
@@ -19,69 +16,131 @@ namespace PlanningPoker2018_backend_2.WebSockets
 
         public static RoomServer Instance => _instance;
 
-        public static void initialize(IApplicationBuilder app, string Path)
+        public static void Initialize(IApplicationBuilder app, string path)
         {
-            _instance = new RoomServer(app, Path);
+            _instance = new RoomServer(app, path);
         }
 
 
-        private readonly ConcurrentDictionary<string, WebSocketRoom> _activeRooms =new ConcurrentDictionary<string, WebSocketRoom>();
+        private readonly ConcurrentDictionary<string, WebSocketRoom> _activeRooms =
+            new ConcurrentDictionary<string, WebSocketRoom>();
 
-        public RoomServer(IApplicationBuilder app, string Location) : base(app, Location)
+        private RoomServer(IApplicationBuilder app, string location) : base(app, location)
         {
         }
 
         public override void handleSocketClose(AppWebSocket socket)
         {
-            
         }
 
-        public async override void handleNewMessage(AppWebSocket socket, string message)
+        public override async void handleNewMessage(AppWebSocket socket, string message)
         {
             var parsedMessage = JsonConvert.DeserializeObject<WebSocketMessage>(message);
-            var messageType = parsedMessage.type;
             //WORKAROUND to fix problem with end of message
             var messageToSend = JsonConvert.SerializeObject(parsedMessage);
-            if(_activeRooms.ContainsKey(parsedMessage.roomId))
+            if (_activeRooms.ContainsKey(parsedMessage.roomId))
             {
-                try
+                var room = _activeRooms[parsedMessage.roomId];
+                if (parsedMessage.type == "discussion")
                 {
-                    await _activeRooms[parsedMessage.roomId].handleSendingMessage(socket, messageToSend);
-                } 
-                catch(WebSocketException ex)
+                    await room.HandleSendingMessage(socket, messageToSend);
+                    if (!(parsedMessage.content["estimates"] is JArray estimates) || estimates.Count <= 1) return;
+                    var estimatesList = estimates.ToObject<List<WsEstimate>>()
+                        .OrderBy(e => e.estimate)
+                        .ToList();
+                    var minEstimate = estimatesList.First();
+                    var maxEstimate = estimatesList.Last();
+
+                    var startDiscussionMessage =
+                        new WebSocketMessage()
+                        {
+                            roomId = parsedMessage.roomId,
+                            type = "start-discussion",
+                            socketId = parsedMessage.socketId
+                        };
+                    var serializedDisussionMessage = JsonConvert.SerializeObject(startDiscussionMessage);
+
+                    var minEstimates = estimatesList.Where(e => e.estimate == minEstimate.estimate).ToList();
+                    minEstimates.ForEach(async e =>
+                    {
+                        try
+                        {
+                            await room.SendMessageToParticipant(e.socketId, serializedDisussionMessage);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            var errorString = "Error sending message to " + e.socketId + "; Socket not found." +
+                                              ex.Message;
+                            var errorMessage = new BasicMessage() {message = errorString, type = "error"};
+                            await socket.Send(errorMessage.ToJsonString());
+                        }
+                    });
+                    if (minEstimate.estimate != maxEstimate.estimate)
+                    {
+                        var maxEstimates = estimatesList.Where(e => e.estimate == maxEstimate.estimate).ToList();
+                        maxEstimates.ForEach(async e =>
+                            {
+                                try
+                                {
+                                    await room.SendMessageToParticipant(e.socketId, serializedDisussionMessage);
+                                }
+                                catch (InvalidOperationException ex)
+                                {
+                                    var errorString = "Error sending message to " + e.socketId + "; Socket not found." +
+                                                      ex.Message;
+                                    var errorMessage = new BasicMessage() {message = errorString, type = "error"};
+                                    await socket.Send(errorMessage.ToJsonString());
+                                }
+                            }
+                        );
+                    }
+                }
+                else if (parsedMessage.type == "chat")
                 {
-                    await socket.Send("{'message': '" + ex.Message + "', 'type': 'error' }");
+                    await room.SendMessageToOthers(socket.WebSocketId, messageToSend);
+                }
+                else
+                {
+                    try
+                    {
+                        await _activeRooms[parsedMessage.roomId].HandleSendingMessage(socket, messageToSend);
+                    }
+                    catch (WebSocketException ex)
+                    {
+                        await socket.Send(new BasicMessage {message = ex.Message, type = "error"}.ToJsonString());
+                    }
                 }
             }
             else
             {
-                await socket.Send("{'message': 'Room not found', 'type': 'error' }");
+                await socket.Send(new BasicMessage {message = "Room not found", type = "error"}.ToJsonString());
             }
         }
 
-        public async override Task handleNewSocket(AppWebSocket socket)
+        public override async Task handleNewSocket(AppWebSocket socket)
         {
             socket.OnMessageReceived += handleNewMessage;
             socket.OnOpen += Socket_OnOpen;
             socket.OnClose += Socket_OnClose;
             await socket.Initialize();
-            
         }
 
         private void Socket_OnClose(AppWebSocket sender, string roomId)
         {
-            _activeRooms[roomId].removeSocketFromRoom(sender);
+            _activeRooms[roomId].RemoveSocketFromRoom(sender);
         }
 
         private async void Socket_OnOpen(AppWebSocket sender, string roomId, bool isClientSocket)
         {
-            var socketsReadyMessage = new WebSocketMessage() { type = "sockets-ready", roomId = roomId };
+            var socketsReadyMessage =
+                new WebSocketMessage() {type = "sockets-ready", roomId = roomId, socketId = sender.WebSocketId};
             var serializedMessage = JsonConvert.SerializeObject(socketsReadyMessage);
             if (!_activeRooms.ContainsKey(roomId))
             {
-                if(isClientSocket)
+                if (isClientSocket)
                 {
-                    await sender.Send("You have no access to the room");
+                    await sender.Send(new BasicMessage {message = "You have no access to the room", type = "error"}
+                        .ToJsonString());
                     return;
                 }
                 else
@@ -89,14 +148,15 @@ namespace PlanningPoker2018_backend_2.WebSockets
                     _activeRooms.TryAdd(roomId, new WebSocketRoom(roomId, sender));
                 }
             }
-            else if(isClientSocket)
+            else if (isClientSocket)
             {
-                _activeRooms[roomId].addClientToRoom(sender);
+                await _activeRooms[roomId].AddClientToRoom(sender);
             }
             else
             {
-                _activeRooms[roomId].addHostToRoom(sender);
+                _activeRooms[roomId].AddHostToRoom(sender);
             }
+
             await sender.Send(serializedMessage);
         }
     }

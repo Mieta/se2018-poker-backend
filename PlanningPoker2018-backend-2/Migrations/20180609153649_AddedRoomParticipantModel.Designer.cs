@@ -11,30 +11,15 @@ using System;
 namespace PlanningPoker2018_backend_2.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20180609153649_AddedRoomParticipantModel")]
+    partial class AddedRoomParticipantModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.0.2-rtm-10011")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("PlanningPoker2018_backend_2.Models.EstimationTeam", b =>
-                {
-                    b.Property<int>("id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("creator")
-                        .IsRequired();
-
-                    b.Property<string>("name")
-                        .IsRequired();
-
-                    b.HasKey("id");
-
-                    b.ToTable("EstimationTeam");
-                });
 
             modelBuilder.Entity("PlanningPoker2018_backend_2.Models.ProjectTask", b =>
                 {
@@ -94,21 +79,6 @@ namespace PlanningPoker2018_backend_2.Migrations
                     b.HasKey("id");
 
                     b.ToTable("RoomParticipant");
-                });
-
-            modelBuilder.Entity("PlanningPoker2018_backend_2.Models.TeamMember", b =>
-                {
-                    b.Property<int>("id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("mailAddress")
-                        .IsRequired();
-
-                    b.Property<int>("teamId");
-
-                    b.HasKey("id");
-
-                    b.ToTable("TeamMember");
                 });
 
             modelBuilder.Entity("PlanningPoker2018_backend_2.Models.User", b =>

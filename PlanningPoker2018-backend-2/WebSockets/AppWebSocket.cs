@@ -12,6 +12,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
     public class AppWebSocket
     {
         private WebSocket socket;
+        public string WebSocketId { get; private set; }
 
         public event MessageReceivedEventHandler OnMessageReceived;
         public event ConnectionOpenedEventHandler OnOpen;
@@ -25,11 +26,12 @@ namespace PlanningPoker2018_backend_2.WebSockets
         public AppWebSocket(WebSocket webSocket)
         {
             socket = webSocket;
+            WebSocketId = System.Guid.NewGuid().ToString();
         }
 
         public async Task Initialize()
         {
-            var buffer = new byte[1024 * 4];
+            var buffer = new byte[1024 * 16];
             WebSocketReceiveResult wsresult = await socket.ReceiveAsync(new ArraySegment<byte>(buffer),
             CancellationToken.None);
             var initialMessage = System.Text.Encoding.Default.GetString(buffer);
@@ -37,8 +39,9 @@ namespace PlanningPoker2018_backend_2.WebSockets
             Array.Clear(buffer, 0, buffer.Length);
             while(parsedMessage.type != "init-host" && parsedMessage.type != "init-client")
             {
-                string initErrorMessage = "{'message': 'Web socket was not initialized. Send initialization message first.'}";
-                await Send(initErrorMessage);
+                var errorMessage = new BasicMessage() { message = "Web socket was not initialized. Send initialization message first.", type = "error" };
+                string serializedErrorMessage = JsonConvert.SerializeObject(errorMessage);
+                await Send(serializedErrorMessage);
                 wsresult = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
                 var message = System.Text.Encoding.Default.GetString(buffer);
                 parsedMessage = JsonConvert.DeserializeObject<WebSocketMessage>(message);
