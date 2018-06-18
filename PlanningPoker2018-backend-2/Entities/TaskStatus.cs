@@ -12,11 +12,13 @@ namespace PlanningPoker2018_backend_2.Entities
         
         public static readonly TaskStatus UNESTIMATED = new TaskStatus(1, "Unestimated");
         public static readonly TaskStatus VOTING = new TaskStatus(2, "Voting");
+        public static readonly TaskStatus ESTIMATED = new TaskStatus(3, "Estimated");
 
         private static readonly Dictionary<string, TaskStatus> statuses = new Dictionary<string, TaskStatus>()
         {
             {UNESTIMATED.name, UNESTIMATED},
-            {VOTING.name, VOTING }
+            {VOTING.name, VOTING },
+            {ESTIMATED.name, ESTIMATED }
         };
 
         public TaskStatus(int value, string name)

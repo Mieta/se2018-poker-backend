@@ -62,15 +62,17 @@ namespace PlanningPoker2018_backend_2.Controllers
                 return BadRequest(ModelState);
             }
 
-            var projectTask = new ProjectTask() {id = taskId, estimate = estimate};
+            var projectTask = new ProjectTask() {id = taskId, estimate = estimate, status = TaskStatus.ESTIMATED.name};
             _context.ProjectTask.Attach(projectTask);
             _context.Entry(projectTask).Property(t => t.estimate).IsModified = true;
+            _context.Entry(projectTask).Property(t => t.status).IsModified = true;
             await _context.SaveChangesAsync();
 
             return AcceptedAtAction("ChangeProjectTaskEstimate", new
             {
                 id = projectTask.id,
-                estimate = projectTask.estimate
+                estimate = projectTask.estimate,
+                status = projectTask.status
             });
         }
 
@@ -96,6 +98,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.ProjectTask.Attach(task);
             _context.Entry(task).Property(t => t.status).IsModified = true;
             await _context.SaveChangesAsync();
+            _context.Entry(task).State = EntityState.Detached;
 
             return NoContent();
         }
