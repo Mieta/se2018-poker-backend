@@ -71,6 +71,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.Entry(projectTask).Property(t => t.estimate).IsModified = true;
             _context.Entry(projectTask).Property(t => t.status).IsModified = true;
             await _context.SaveChangesAsync();
+            _context.Entry(projectTask).State = EntityState.Detached;
 
             return AcceptedAtAction("ChangeProjectTaskEstimate", new
             {
