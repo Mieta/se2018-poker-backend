@@ -67,7 +67,7 @@ namespace PlanningPoker2018_backend_2.WebSockets
         public async Task Send(string message)
         {
             var messageBytes = System.Text.Encoding.Default.GetBytes(message);
-            await socket.SendAsync(new ArraySegment<byte>(messageBytes, 0, message.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+            await socket.SendAsync(new ArraySegment<byte>(messageBytes, 0, messageBytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
         }
     }
 }
