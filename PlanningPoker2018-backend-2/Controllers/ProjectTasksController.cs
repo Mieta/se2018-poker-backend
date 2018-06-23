@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PlanningPoker2018_backend_2.Entities;
 using PlanningPoker2018_backend_2.Models;
 using SQLitePCL;
@@ -65,15 +66,18 @@ namespace PlanningPoker2018_backend_2.Controllers
                 return BadRequest(ModelState);
             }
 
-            var projectTask = new ProjectTask() {id = taskId, estimate = estimate};
+            var projectTask = new ProjectTask() {id = taskId, estimate = estimate, status = TaskStatus.ESTIMATED.name};
             _context.ProjectTask.Attach(projectTask);
             _context.Entry(projectTask).Property(t => t.estimate).IsModified = true;
+            _context.Entry(projectTask).Property(t => t.status).IsModified = true;
             await _context.SaveChangesAsync();
+            _context.Entry(projectTask).State = EntityState.Detached;
 
             return AcceptedAtAction("ChangeProjectTaskEstimate", new
             {
-                projectTask.id,
-                projectTask.estimate
+                id = projectTask.id,
+                estimate = projectTask.estimate,
+                status = projectTask.status
             });
         }
 
@@ -100,6 +104,7 @@ namespace PlanningPoker2018_backend_2.Controllers
             _context.ProjectTask.Attach(task);
             _context.Entry(task).Property(t => t.status).IsModified = true;
             await _context.SaveChangesAsync();
+            _context.Entry(task).State = EntityState.Detached;
 
             return NoContent();
         }
